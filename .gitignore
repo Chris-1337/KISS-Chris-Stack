@@ -1,0 +1,10 @@
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.codegraph/
+.ouroboros/
+.env
+.env.*
+!.env.example
+*.zip

@@ -1,0 +1,14 @@
+interface:
+  display_name: "KISS-Chris-Stack"
+  short_description: "Install and route work through Chris's verified coding stack."
+  default_prompt: "Use $kiss-chris-stack to choose and execute the smallest verified path for this coding task."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "ouroboros"
+      description: "Ouroboros workflow, evaluation, and repair server"
+    - type: "mcp"
+      value: "codegraph"
+      description: "CodeGraph repository intelligence server"
+policy:
+  allow_implicit_invocation: true

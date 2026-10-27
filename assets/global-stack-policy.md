@@ -1,0 +1,23 @@
+## KISS-Chris-Stack
+
+- Use the installed `kiss-chris-stack` skill automatically for software-engineering work.
+- Before every implementation, formulate a strong `/goal` with target state, scope, constraints, acceptance criteria, and verification. Execute Fast Path goals directly; hand Deep Path goals to Ouroboros.
+- Use the fast path for explicit, local, low-risk changes. Use the Ouroboros deep path for ambiguous, cross-cutting, architectural, or risky work; finish deep-path work with Ouroboros evaluation.
+- Deep Path: `Goal -> Seed/interview only when genuinely ambiguous -> CodeGraph -> Execute -> Ponytail -> Caveman + RTK -> tests/evidence -> Ouroboros Evaluate -> focused repair -> one consolidated final evaluation`.
+- Use `ouroboros auto "<goal>"` only for genuinely ambiguous goals. If the goal already has testable acceptance criteria, create or reuse a Seed and start `ouroboros_start_execute_seed` directly.
+- Before execution, make every acceptance criterion observable with source paths, a negative case, and a verification command. Include stable identity, latest-evidence, readback, and rollback requirements when relevant.
+- Before the first formal evaluation, run all mechanical checks and pass exact results plus all relevant code, test, evidence, and documentation paths as one evaluation artifact.
+- Keep Stage 3/consensus disabled by default. Enable it only for contradictory Stage-2 evidence, a genuinely high-risk decision, or an explicit user request.
+- After a partial rejection, repair and verify only failed acceptance criteria, then run exactly one consolidated evaluation of all criteria.
+- Keep `auto_evolve` disabled. Use evolution/Ralph only when the same cause remains after one focused repair or evaluation exposes an architectural conflict.
+- Treat observer progress as a real phase, cursor, or acceptance-criterion change. After two unchanged intervals, inspect exact job state, worker process, and latest error; cancel only a proven-stuck exact job.
+- Default Deep-Path budget: at most 60 minutes per generation, 15 minutes without progress, and three iterations per acceptance criterion. Report any required extension instead of silently continuing.
+- On a fresh installation, the first action inside the detected AI agent must be exactly `ooo setup`; do not initialize the remaining stack until it succeeds.
+- For every Deep Path, call the official background Ouroboros MCP starter. As soon as its receipt returns, open `meta.dashboard_url` with the installed `open-dashboard` helper and delegate `meta.job_observer` unchanged to exactly one read-only host child named `run_observer`. The host child, never an execution worker, owns job wait/result and follows chained jobs. Keep the parent relay loop open until the observer is terminal.
+- Treat the dashboard and observer as host-owned observability. Start them immediately after the start receipt and before the later Seed execution workers begin. Never ask an execution worker to start either one, and never create a second observer for the same job.
+- Before non-trivial repository changes, initialize CodeGraph with `codegraph init -i <repo>` when `.codegraph/` is absent; otherwise run `codegraph sync <repo>`. Use its MCP tools for focused structure and impact analysis.
+- Use the globally installed `ui-ux-pro-max` skill for every UI task, including visual design, components, interactions, responsiveness, accessibility, and UI/UX reviews.
+- Do not use `ui-ux-pro-max` for pure backend, API, database, infrastructure, or other non-visual work. Its recommendations remain subordinate to the user request and project rules.
+- Keep Ponytail active for the smallest correct implementation and Caveman active for terse agent communication. Do not reduce validation, security, error handling, accessibility, tests, or requested behavior.
+- Prefer RTK-wrapped shell commands when available, but keep complete failure and verification evidence.
+- Treat configured Ouroboros and CodeGraph MCP entries as host-started services. Do not start duplicate MCP processes.
