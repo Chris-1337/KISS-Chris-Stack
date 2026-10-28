@@ -2,3 +2,7 @@
 *.md whitespace=-blank-at-eol
 *.pptx binary
 *.png binary
+# Preserve bundled upstream bytes required by the SHA256 manifest.
+hooks/** -text
+skills/ponytail*/SKILL.md -text
+licenses/ponytail-LICENSE -text
