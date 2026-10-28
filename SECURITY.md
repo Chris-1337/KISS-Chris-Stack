@@ -1,6 +1,6 @@
 # Security policy
 
-Report suspected vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/Chris-1337/KISS-Chris-Stack/security/advisories/new) once it is enabled for the public repository. While that reporting channel is unavailable, do not create a public issue or discussion containing exploit details or secrets. A separate private contact address has not been designated.
+Report suspected vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/Chris-1337/KISS-Chris-Stack/security/advisories/new), which is enabled for this public repository. Do not create a public issue or discussion containing exploit details or secrets.
 
 Never include passwords, access tokens, private keys, personal configuration, or unredacted logs in issues, discussions, or pull requests. If a real credential is exposed, revoke or rotate it first; deleting a file or rewriting Git history does not invalidate the credential.
 

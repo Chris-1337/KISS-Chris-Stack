@@ -6,7 +6,7 @@ Fork this repository and open a pull request against `main`. Describe the proble
 
 Project-original material uses the [MIT license](LICENSE). Bundled third-party components retain their [own licenses and notices](docs/THIRD-PARTY.md).
 
-Every community pull request requires review and approval from the owner, `@Chris-1337`. The owner has admin access and may push or merge directly without a pull request. No other collaborator currently has write access. The prepared GitHub ruleset requires one code-owner approval and dismisses stale approvals when changed commits are pushed; activation depends on the release gates in [publication setup](docs/GITHUB-PUBLICATION.md).
+Every community pull request requires review and approval from the owner, `@Chris-1337`. The owner has admin access and may push or merge directly without a pull request. No other collaborator currently has write access. The active GitHub ruleset requires one code-owner approval and dismisses stale approvals when changed commits are pushed; see [publication setup](docs/GITHUB-PUBLICATION.md).
 
 Run the relevant repository checks before submitting:
 
