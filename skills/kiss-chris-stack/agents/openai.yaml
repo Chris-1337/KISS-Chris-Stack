@@ -1,0 +1,11 @@
+interface:
+  display_name: "KISS-Chris-Stack"
+  short_description: "Gather context and orchestrate separate TDD agents."
+  default_prompt: "Use $kiss-chris-stack to inspect documentation and code, define the goal, and orchestrate separate test, implementation, and evaluation agents."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "codegraph"
+      description: "CodeGraph repository intelligence server"
+policy:
+  allow_implicit_invocation: true

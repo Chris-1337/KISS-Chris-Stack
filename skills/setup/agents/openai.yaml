@@ -1,0 +1,6 @@
+interface:
+  display_name: "Project Setup"
+  short_description: "Verify local tooling, policy, MCP and project documentation."
+  default_prompt: "Use $setup to verify and repair local stack prerequisites, prove session readiness, and fill missing project documentation from evidence."
+policy:
+  allow_implicit_invocation: true

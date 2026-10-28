@@ -1,0 +1,9 @@
+# Goal: English documentation and prompt-language communication
+
+- What: Translated all German first-party documentation, ADRs, and historical traces into English. Added the canonical rule for existing/future English documentation and English internal reasoning while retaining user-facing communication in the prompt's language. Documented the decision in [ADR 0003](../../docs/adr/0003-documentation-language.md).
+- Why: Explicit user request dated 2026-10-28, including German communication for German prompts.
+- Locations: `assets/global-stack-policy.md`, `README.md`, `docs/`, `agent-traces/`, `skills/setup/SKILL.md`, its hash in `assets/bundle-manifest.json`, and documentation contracts in `tests/test_managed_configuration.py`.
+- Preservation: Existing filenames, links, commands, technical meaning, historical evidence, upstream English resources/licenses, and unrelated working-tree changes were retained. No external writes.
+- Checks: The separate test agent demonstrated RED with 3 failing focused documentation checks. Implementation verification: 31 configuration/lifecycle regression tests passed; `git diff --check` passed. The orchestrator confirmed local managed global policy propagation through the existing setup repair, all 13 runtime checks, and a real session CodeGraph MCP status call.
+- Independent evaluation: 31 tests passed in 7.93 seconds; PowerShell managed configuration passed; `git diff --check` exited 0. All 55 local Markdown links across 18 first-party documents were valid. Translation meaning and historical evidence were preserved; the global managed block matched exactly. All 13 final read-only runtime checks passed, including 108 resource hashes; comparison of 88 resources found only the intended setup skill change.
+- Limits: No commit, push, publication, or deployment.

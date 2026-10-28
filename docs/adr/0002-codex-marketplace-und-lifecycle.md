@@ -1,0 +1,7 @@
+# ADR 0002: Dedicated Codex marketplace plugin with lifecycle hooks
+
+- Status: accepted through the user decision dated 2026-10-28: a dedicated repository marketplace with lifecycle hooks; normal one-time host approval is accepted. No public directory release and no separate installer.
+- Decision: Bundle skills and required data/scripts in the repository. Setup handles local runtime checks/repair, global marker-managed rules, MCP/index checks, and documentation bootstrap. Root events require setup before the original request; sub-agents receive only their assigned role.
+- Compatibility: Codex CLI 0.159.0 discovers no hooks from the portable root manifest. An isolated native control plugin is recognized as an untrusted hook. Therefore `.codex-plugin/plugin.json` is the canonical native entrypoint; root `plugin.json` contains only the identity. The same isolated host check discovers six stack/Ponytail hooks with this layout. Trust was not automatically approved.
+- Evidence: [official package documentation](https://developers.openai.com/plugins/build/plugins), [hook documentation](https://learn.chatgpt.com/docs/hooks), [Codex issue 47925](https://github.com/openai/codex/issues/47925), [issue 39895](https://github.com/openai/codex/issues/39895), and actual CLI/app-server verification by the independent evaluation agent for this goal.
+- Consequence: A future switch to the portable format requires proven hook discovery. Trust, reload, and interpreters remain explicit prerequisites. A hook definition alone does not guarantee automatic execution.

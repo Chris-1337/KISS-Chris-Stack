@@ -1,23 +1,42 @@
 ## KISS-Chris-Stack
 
-- Use the installed `kiss-chris-stack` skill automatically for software-engineering work.
-- Before every implementation, formulate a strong `/goal` with target state, scope, constraints, acceptance criteria, and verification. Execute Fast Path goals directly; hand Deep Path goals to Ouroboros.
-- Use the fast path for explicit, local, low-risk changes. Use the Ouroboros deep path for ambiguous, cross-cutting, architectural, or risky work; finish deep-path work with Ouroboros evaluation.
-- Deep Path: `Goal -> Seed/interview only when genuinely ambiguous -> CodeGraph -> Execute -> Ponytail -> Caveman + RTK -> tests/evidence -> Ouroboros Evaluate -> focused repair -> one consolidated final evaluation`.
-- Use `ouroboros auto "<goal>"` only for genuinely ambiguous goals. If the goal already has testable acceptance criteria, create or reuse a Seed and start `ouroboros_start_execute_seed` directly.
-- Before execution, make every acceptance criterion observable with source paths, a negative case, and a verification command. Include stable identity, latest-evidence, readback, and rollback requirements when relevant.
-- Before the first formal evaluation, run all mechanical checks and pass exact results plus all relevant code, test, evidence, and documentation paths as one evaluation artifact.
-- Keep Stage 3/consensus disabled by default. Enable it only for contradictory Stage-2 evidence, a genuinely high-risk decision, or an explicit user request.
-- After a partial rejection, repair and verify only failed acceptance criteria, then run exactly one consolidated evaluation of all criteria.
-- Keep `auto_evolve` disabled. Use evolution/Ralph only when the same cause remains after one focused repair or evaluation exposes an architectural conflict.
-- Treat observer progress as a real phase, cursor, or acceptance-criterion change. After two unchanged intervals, inspect exact job state, worker process, and latest error; cancel only a proven-stuck exact job.
-- Default Deep-Path budget: at most 60 minutes per generation, 15 minutes without progress, and three iterations per acceptance criterion. Report any required extension instead of silently continuing.
-- On a fresh installation, the first action inside the detected AI agent must be exactly `ooo setup`; do not initialize the remaining stack until it succeeds.
-- For every Deep Path, call the official background Ouroboros MCP starter. As soon as its receipt returns, open `meta.dashboard_url` with the installed `open-dashboard` helper and delegate `meta.job_observer` unchanged to exactly one read-only host child named `run_observer`. The host child, never an execution worker, owns job wait/result and follows chained jobs. Keep the parent relay loop open until the observer is terminal.
-- Treat the dashboard and observer as host-owned observability. Start them immediately after the start receipt and before the later Seed execution workers begin. Never ask an execution worker to start either one, and never create a second observer for the same job.
-- Before non-trivial repository changes, initialize CodeGraph with `codegraph init -i <repo>` when `.codegraph/` is absent; otherwise run `codegraph sync <repo>`. Use its MCP tools for focused structure and impact analysis.
-- Use the globally installed `ui-ux-pro-max` skill for every UI task, including visual design, components, interactions, responsiveness, accessibility, and UI/UX reviews.
-- Do not use `ui-ux-pro-max` for pure backend, API, database, infrastructure, or other non-visual work. Its recommendations remain subordinate to the user request and project rules.
-- Keep Ponytail active for the smallest correct implementation and Caveman active for terse agent communication. Do not reduce validation, security, error handling, accessibility, tests, or requested behavior.
-- Prefer RTK-wrapped shell commands when available, but keep complete failure and verification evidence.
-- Treat configured Ouroboros and CodeGraph MCP entries as host-started services. Do not start duplicate MCP processes.
+Automatically use the installed `kiss-chris-stack` skill for software development. The user request and project rules take precedence.
+
+### Setup and context before the goal
+
+- Before each new task, the root session uses bundled `/setup` to check the current runtime, skills, global rules, CodeGraph index/MCP, and a real MCP tool call in this session. Do not implement without readiness or while `reload-required`; no cached ready flag or automatic hook approval. Sub-agents do not run setup.
+- Establish context before every implementation: review both `docs/` and `agent-traces/`, read relevant documents and traces, and inspect affected code, call paths, tests, and existing designs.
+- If either directory is missing or has no substantive content, run `/setup` first. This local documentation bootstrap is exempt from the implementation goal gate, precedes it, and invokes neither itself nor another goal.
+- Clarify missing information, conflicting requirements, and necessary unresolved decisions with the user before starting dependent work. Do not invent requirements.
+- Then use Ponytail to formulate a strong `/goal`: target state, scope, constraints, measurable acceptance criteria, and suitable verification.
+- Only the root session manages the goal: check `get_goal` and reuse an open goal for the same task. Clarify conflicts with an unrelated open goal instead of replacing it. Otherwise register with `create_goal` and confirm success before implementation. Set `token_budget` only on explicit request. Resolve registration failures; if native tools are unavailable, explicitly label the goal textual and unregistered.
+
+### Implementation through separate agents
+
+The root session orchestrates and supplies the goal, context, and boundaries to three separate sub-agents:
+
+1. **Test agent:** writes tests from the goal specification and demonstrates the expected failure (RED).
+2. **Implementation agent:** makes the smallest complete change until the specified tests pass (GREEN). It does not weaken tests; specification errors go to the orchestrator and test agent for clarification.
+3. **Evaluation agent:** independently checks all acceptance criteria, constraints, and regressions using executable or other reliable evidence.
+
+Sub-agents handle only their assigned role under the same goal; they register no goals and delegate no recursive groups of three. Test specification, implementation, and final verification remain with different agents/sessions. For documentation-only tasks, suitable document and contract checks serve as tests. If sub-agents are unavailable, clarify the blocked workflow instead of silently combining roles.
+
+The orchestrator assigns failures to the responsible agent and autonomously continues repair and reevaluation until the goal is met. Pause for a necessary user decision or approval. Never infer success from agent prose alone. Mark a native goal `complete` with `update_goal` only after evidence proves fulfillment; other statuses follow host rules.
+
+### Tools and boundaries
+
+- **Ponytail:** first consider deletion, reuse, platform/standard library features, and existing dependencies; make the smallest robust change without speculative abstractions. Preserve security, validation, error handling, accessibility, and business requirements.
+- **CodeGraph:** use focused context, call paths, and impact for structural questions. Before nontrivial code changes, synchronize an existing index (`codegraph sync <repo>`) or initialize a missing one (`codegraph init -i <repo>`). The host starts MCP; do not start a second server. Use `rg` for literal searches.
+- **ui-ux-pro-max:** use for every UI task, including design, interaction, responsiveness, accessibility, and review; skip for purely nonvisual work.
+- **Caveman and RTK:** keep communication in the user's language and shell output concise; preserve errors, exit codes, technical facts, and verification evidence in full.
+- Preserve unrelated changes. No destructive Git commands without explicit approval. External systems are read-only by default; push, merge, publication, deployment, credential changes, and other external writes require explicit user authorization.
+
+### Language
+
+- Write all existing and future documentation, including `docs/` and `agent-traces/`, in English. Conduct internal reasoning in English; communicate with the user in the language of their prompt.
+
+### Documentation
+
+- `docs/` is for people: system architecture covering all existing components (for example frontend, backend, integrations), business decisions, and technical decisions as ADRs. Maintain existing documentation; identify evidence and open questions.
+- `agent-traces/<component>/` is long-term agent memory: for each implemented goal, add a short note with the goal/target, what changed, why, affected locations, checks/results, and remaining limits. Derive components from the actual project; for cross-cutting work, use one main note with references instead of duplicates.
+- Update both areas as appropriate to the change. Store no secrets, raw logs, or chat transcripts; project knowledge belongs in the repository, not global rules.

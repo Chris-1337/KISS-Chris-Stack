@@ -1,12 +1,9 @@
 interface:
   display_name: "KISS-Chris-Stack"
-  short_description: "Install and route work through Chris's verified coding stack."
-  default_prompt: "Use $kiss-chris-stack to choose and execute the smallest verified path for this coding task."
+  short_description: "Gather context and orchestrate separate TDD agents."
+  default_prompt: "Use $kiss-chris-stack to inspect documentation and code, define the goal, and orchestrate separate test, implementation, and evaluation agents."
 dependencies:
   tools:
-    - type: "mcp"
-      value: "ouroboros"
-      description: "Ouroboros workflow, evaluation, and repair server"
     - type: "mcp"
       value: "codegraph"
       description: "CodeGraph repository intelligence server"

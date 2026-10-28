@@ -1,0 +1,6 @@
+# Goal: direct GitHub marketplace installation instructions
+
+- What: README installation and onboarding quick start now add the GitHub repository URL directly; the plugin installation command is unchanged.
+- Why: Installation instructions should not require a manual clone or local checkout.
+- Checks: The test agent demonstrated RED through an ad-hoc documentation contract. Implementation verification passed eight documentation assertions; the orchestrator's seven assertions also passed. The orchestrator verified HTTPS Git support through CLI help and official documentation, and confirmed that remote HEAD and `origin/main` still point to initialization commit `cff3781`, without marketplace/plugin files. Independent evaluation accepted the change: the exact remote URL matches origin, commands were checked, all 12 local links were valid, prose remained English, and `git diff --check` exited 0. A 143-file snapshot confirmed changes only to README, onboarding, and this trace. Full tests were unnecessary for this documentation-only change.
+- Limit: The remote marketplace/plugin files must be published before these commands can install this package. No external writes or real-profile installation were performed.

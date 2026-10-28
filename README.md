@@ -1,54 +1,52 @@
-# KISS-Chris-Stack Installer
+# KISS-Chris-Stack
 
-KISS-Chris-Stack is ready to zip and share. It installs and activates Ouroboros, CodeGraph, UI-UX-Pro-Max, Ponytail, Caveman, RTK, the `kiss-chris-stack` skill, global agent instructions, and MCP startup integration.
+A complete Codex plugin for context-first goals and separate test, implementation, and evaluation agents. It bundles the orchestrator, setup, six Ponytail skills, Caveman, UI-UX-Pro-Max with search code/data, and CodeGraph/RTK guides. See [architecture](docs/ARCHITEKTUR.md), [onboarding](docs/PRODUKT-ONBOARDING.md), and [provenance](docs/THIRD-PARTY.md).
 
-Product overview, architecture, operation, onboarding, release status, and limitations are documented in the [product onboarding guide](docs/PRODUKT-ONBOARDING.md).
+Project-original material is [MIT licensed](LICENSE). Bundled third-party components retain their [own licenses and notices](docs/THIRD-PARTY.md). See [contributing](CONTRIBUTING.md), [security reporting](SECURITY.md), and [publication setup](docs/GITHUB-PUBLICATION.md).
 
-## Requirements
+## Install through the repository marketplace
 
-- Git
-- Node.js with `npm` and `npx`
-- Python 3 available as `python`, `python3`, or `py` for the UI-UX-Pro-Max search scripts
-- At least one supported agent CLI. Codex and Claude Code receive native plugin and global-instruction integration; compatible fallback hosts receive their supported Ouroboros and skill integration.
-- Internet access during installation
-
-## Install
-
-Run the installer from the repository that should receive the CodeGraph index.
-
-Windows PowerShell:
+Add the GitHub repository marketplace directly; no manual clone or checkout is required:
 
 ```powershell
-& 'C:\path\to\KISS-Chris-Stack\scripts\install-stack.ps1' -ProjectPath .
+codex plugin marketplace add https://github.com/Chris-1337/KISS-Chris-Stack.git
+codex plugin add kiss-chris-stack@kiss-chris-stack
 ```
 
-macOS, Linux, or WSL:
+The repository provides the marketplace and plugin files used by these commands.
 
-```bash
-bash /path/to/KISS-Chris-Stack/scripts/install-stack.sh "$PWD"
-```
+Alternatively install from the repository marketplace in the Codex desktop Plugins Directory. No separate installer is required. This is a repository marketplace plugin with lifecycle hooks, not a public-directory submission.
 
-The installation is idempotent. It installs the native Ouroboros/Ponytail integrations, applies a bounded dashboard-picker compatibility fix when the installed Ouroboros release still needs it, opens a fresh detected agent whose first prompt is exactly `ooo setup`, then continues only after setup succeeds. It configures the bounded Deep Path (three iterations per acceptance criterion, 15 minutes without progress, 60 minutes per generation, Stage 3 off, and `auto_evolve=false`). It then installs the current `ui-ux-pro-max-cli` and runs `uipro init --ai codex` from the user home for Codex (plus the matching Claude initialization when detected). Existing CodeGraph indexes are synchronized; missing indexes are initialized. Existing `.ouroboros/mechanical.toml` gates are preserved; missing gates are detected. Existing global instruction content is preserved outside the marked `kiss-chris-stack` block; legacy `ouroboros-stack` blocks are migrated in place.
+Prerequisites: a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for bundled searches/setup checks. Missing runtimes require local installation and possibly host reload. Run the packaged `/setup` during onboarding and review/trust the hook definition through the normal host UI. Never bypass review.
 
-On native Windows, the installer registers a user-logon scheduled task named `Ouroboros MCP`. This is required because current Ouroboros releases intentionally avoid Codex STDIO MCP on native Windows. On macOS, Linux, and WSL, Codex starts the STDIO MCP server when the agent starts. CodeGraph uses host-managed MCP startup on all platforms.
+## What happens on a task
 
-For each Deep Path, the agent starts Ouroboros through MCP, waits until the returned DB-scoped dashboard run picker is actually readable, opens it in the browser, and delegates exactly one read-only host observer before execution workers begin. If Ouroboros has retired an idle dashboard daemon, the launcher replaces the stale port with the current DB-scoped endpoint automatically while preserving `?run=...`.
+Trusted SessionStart and UserPromptSubmit hooks inject setup/readiness before the original request. Setup checks current tools, bundled resources, global marker-owned policy (plus an existing override), the project CodeGraph index, MCP registration and actual session MCP tool visibility. Missing prerequisites are repaired locally; no cached ready flag substitutes for checks. The original request proceeds through the stack after readiness and context collection.
 
-## Unavoidable manual steps
+Sub-agents receive only their assigned role under the same goal. They do not start another setup, goal or recursive agent group. Upstream Ponytail lifecycle hooks run alongside stack hooks.
 
-- Restart/reopen the agent after installation so newly installed plugins, skills, MCP registrations, and global rules are loaded.
-- Complete any account login or provider authorization requested by the selected agent runtime. Automatic first-agent setup is currently implemented for Codex and Claude Code; another host must run `ooo setup` once itself before rerunning the installer.
-- Review and trust Ponytail lifecycle hooks once when the host asks; installers cannot safely grant hook trust on a recipient's behalf.
-- On a headless/SSH machine no browser can be opened. The dashboard URL is printed for manual opening or forwarding.
+`docs/` holds human architecture, business decisions and ADRs. `agent-traces/<component>/` holds brief records of implemented goals. Setup fills only evidence-backed gaps and preserves existing documents; empty projects receive only the structure.
 
-## Verify
+The [shared language policy](assets/global-stack-policy.md#language) requires English documentation and internal reasoning; user-facing communication follows the language of the prompt. See [ADR 0003](docs/adr/0003-documentation-language.md).
+
+## Verify and repair
+
+Use `/setup` to check or repair local prerequisites. The internal read-only checker is also available:
 
 ```powershell
-& 'C:\path\to\KISS-Chris-Stack\scripts\verify-stack.ps1' -ProjectPath .
+python scripts/setup-runtime.py --project .
 ```
 
-```bash
-bash /path/to/KISS-Chris-Stack/scripts/verify-stack.sh "$PWD"
+Exit 0 / `runtime_ready=true` proves executable checks only. `ready` remains false until the setup agent successfully calls the real CodeGraph MCP tool in that session. Missing tools after registration mean reload-required. Exit nonzero identifies a runtime failure. Pins live in [assets/versions.json](assets/versions.json).
+
+Repository checks:
+
+```powershell
+uv run --offline --with pytest python -m pytest tests/test_managed_configuration.py tests/test_plugin_lifecycle.py -q
 ```
 
-The installer writes only marker-owned global instruction blocks. The sole compatibility patch changes the installed Ouroboros progress-row reader from generic payload identity to the already-projected aggregate identity; it is syntax-checked, idempotent, and refuses unknown upstream source shapes. Upstream installers own their own plugin, skill, MCP, hook, and configuration entries.
+## Compatibility and limits
+
+Codex CLI 0.159.0 silently drops hooks from portable-schema root manifests. This package uses native `.codex-plugin/plugin.json` and a minimal root identity, matching the working Ponytail layout. See [ADR 0002](docs/adr/0002-codex-marketplace-und-lifecycle.md). Actual hook discovery must show six plugin hooks before execution is claimed.
+
+Automatic execution requires an enabled/loaded plugin, available Node.js, and user-trusted hooks. MCP configuration does not prove session visibility. Setup never self-approves trust, overwrites conflicting MCP entries, changes credentials or grants external publication permissions. Authorized repair may require network access. Complete fresh-machine installation and execution after user trust remain separate checks.

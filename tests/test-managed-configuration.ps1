@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$temp = Join-Path ([IO.Path]::GetTempPath()) "ouroboros-managed-config-$([guid]::NewGuid())"
+$temp = Join-Path ([IO.Path]::GetTempPath()) "kiss-managed-config-$([guid]::NewGuid())"
 New-Item -ItemType Directory -Path $temp | Out-Null
 
 function Assert([bool]$Condition, [string]$Message) {
@@ -10,11 +10,9 @@ function Assert([bool]$Condition, [string]$Message) {
 function Assert-ManagedUpdate([string]$File, [scriptblock]$Update, [string]$Newline = "`n") {
     $begin = '<!-- kiss-chris-stack:start -->'
     $end = '<!-- kiss-chris-stack:end -->'
-    $legacyBegin = '<!-- ouroboros-stack:start -->'
-    $legacyEnd = '<!-- ouroboros-stack:end -->'
     $foreignBefore = "# recipient settings${Newline}custom = keep${Newline}${Newline}"
     $foreignAfter = "${Newline}${Newline}# recipient footer${Newline}footer = keep${Newline}"
-    [IO.File]::WriteAllText($File, "$foreignBefore$legacyBegin${Newline}stale policy${Newline}$legacyEnd$foreignAfter")
+    [IO.File]::WriteAllText($File, "$foreignBefore$begin${Newline}stale policy${Newline}$end$foreignAfter")
     & $Update
     $first = [IO.File]::ReadAllText($File)
     & $Update
@@ -23,13 +21,9 @@ function Assert-ManagedUpdate([string]$File, [scriptblock]$Update, [string]$Newl
     Assert ($first.StartsWith($foreignBefore)) "$File changed configuration before its managed block."
     Assert ($first.EndsWith($foreignAfter)) "$File changed configuration after its managed block."
     Assert (([regex]::Matches($first, [regex]::Escape($begin))).Count -eq 1) "$File does not contain exactly one managed block."
-    Assert (-not $first.Contains($legacyBegin)) "$File retained the legacy managed block."
-    Assert ($first.Contains('Before every implementation, formulate a strong `/goal`')) "$File did not install the current policy."
-    Assert ($first.Contains('meta.job_observer')) "$File did not install host-owned observer startup."
-    Assert ($first.Contains('ui-ux-pro-max')) "$File did not install UI-UX-Pro-Max routing."
-    Assert ($first.Contains('ouroboros_start_execute_seed')) "$File did not install direct Seed routing."
-    Assert ($first.Contains('three iterations per acceptance criterion')) "$File did not install bounded AC iterations."
-    Assert ($first.Contains('auto_evolve')) "$File did not install bounded evolution policy."
+    $installed = ($first.Split(@($begin), [StringSplitOptions]::None)[1].Split(@($end), [StringSplitOptions]::None)[0]).Trim().Replace("`r`n", "`n")
+    $expected = ([IO.File]::ReadAllText((Join-Path $root 'assets/global-stack-policy.md'))).Trim().Replace("`r`n", "`n")
+    Assert ($installed -ceq $expected) "$File did not install the complete shared policy."
 }
 
 try {
@@ -43,7 +37,7 @@ try {
     Assert-ManagedUpdate $shFile { & bash "$unixRoot/scripts/upsert-managed-block.sh" "$unixTemp/CLAUDE.md" "$unixRoot/assets/global-stack-policy.md" } "`r`n"
 
     $textFiles = @(
-        Get-Item (Join-Path $root 'README.md'),(Join-Path $root 'SKILL.md')
+        Get-Item (Join-Path $root 'README.md'),(Join-Path $root 'skills/kiss-chris-stack/SKILL.md')
         Get-ChildItem -LiteralPath (Join-Path $root 'agents'),(Join-Path $root 'assets'),(Join-Path $root 'docs'),(Join-Path $root 'references'),(Join-Path $root 'scripts') -Recurse -File
     ) | Where-Object Extension -in '.md','.ps1','.sh','.yaml','.yml','.json','.toml'
     foreach ($file in $textFiles) {

@@ -7,19 +7,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $begin = '<!-- kiss-chris-stack:start -->'
 $end = '<!-- kiss-chris-stack:end -->'
-$legacyBegin = '<!-- ouroboros-stack:start -->'
-$legacyEnd = '<!-- ouroboros-stack:end -->'
 $content = if (Test-Path -LiteralPath $Path) { [IO.File]::ReadAllText($Path) } else { '' }
 $beginCount = ([regex]::Matches($content, [regex]::Escape($begin))).Count
 $endCount = ([regex]::Matches($content, [regex]::Escape($end))).Count
-$legacyBeginCount = ([regex]::Matches($content, [regex]::Escape($legacyBegin))).Count
-$legacyEndCount = ([regex]::Matches($content, [regex]::Escape($legacyEnd))).Count
-if ($beginCount -ne $endCount -or $legacyBeginCount -ne $legacyEndCount) { throw "Unmatched KISS-Chris-Stack marker in $Path" }
-if ($beginCount -and $legacyBeginCount) { throw "Both current and legacy KISS-Chris-Stack blocks exist in $Path" }
-if ($legacyBeginCount) {
-    $content = $content.Replace($legacyBegin, $begin).Replace($legacyEnd, $end)
-    $beginCount = $legacyBeginCount
-}
+if ($beginCount -ne $endCount) { throw "Unmatched KISS-Chris-Stack marker in $Path" }
 
 $newline = if ($content -match "`r`n") { "`r`n" } else { "`n" }
 $policy = ([IO.File]::ReadAllText($PolicyPath).Trim()).Replace("`r`n", "`n").Replace("`n", $newline)

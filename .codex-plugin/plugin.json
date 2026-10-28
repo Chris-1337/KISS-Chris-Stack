@@ -1,0 +1,28 @@
+{
+  "name": "kiss-chris-stack",
+  "version": "0.2.0",
+  "description": "Context-first goals, separated TDD agents, bundled skills and verified local setup.",
+  "author": {
+    "name": "Chris Sass"
+  },
+  "repository": "https://github.com/Chris-1337/KISS-Chris-Stack",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/setup/SKILL.md"
+    }
+  },
+  "interface": {
+    "displayName": "KISS-Chris-Stack",
+    "shortDescription": "Complete coding stack with setup and separated TDD agents.",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions",
+      "Lifecycle hooks"
+    ],
+    "defaultPrompt": [
+      "Use KISS-Chris-Stack for this task."
+    ]
+  }
+}

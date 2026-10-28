@@ -1,0 +1,20 @@
+{
+  "name": "kiss-chris-stack",
+  "interface": {
+    "displayName": "KISS-Chris-Stack"
+  },
+  "plugins": [
+    {
+      "name": "kiss-chris-stack",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
