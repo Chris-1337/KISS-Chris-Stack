@@ -23,6 +23,11 @@ Sub-agents handle only their assigned role under the same goal; they register no
 
 The orchestrator assigns failures to the responsible agent and autonomously continues repair and reevaluation until the goal is met. Pause for a necessary user decision or approval. Never infer success from agent prose alone. Mark a native goal `complete` with `update_goal` only after evidence proves fulfillment; other statuses follow host rules.
 
+### SonarQube quality gates
+
+- Before configured SonarQube scanner/readback/gate operations, run the bundled `/setup-sonarqube` token-renewal preflight: silently renew only confirmed expired managed tokens using protected owner credentials and unchanged scope. Reuse healthy tokens; unresolved expiry or other authentication/permission failures still block completion. No permanent background service is implied.
+- When SonarQube is configured for the project, include its quality gates in goal acceptance and evaluation. Before marking a goal `complete`, require fresh successful analysis of the current source (including uncommitted changes) and green quality gates for all configured relevant projects/components; use each scanner task's analysis ID, never a cached dashboard pass. A failed, pending, missing or unreachable analysis/gate, missing required coverage, stale source, or expired credentials prevents completion. Preserve configured thresholds; do not bypass gates, silently disable configuration or weaken exclusions to pass. The optional bundled `/setup-sonarqube` skill establishes project-specific scanners, credentials and gate configuration; its absence does not require installing SonarQube for unrelated projects.
+
 ### Tools and boundaries
 
 - **Ponytail:** first consider deletion, reuse, platform/standard library features, and existing dependencies; make the smallest robust change without speculative abstractions. Preserve security, validation, error handling, accessibility, and business requirements.

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Check local plugin prerequisites; --repair performs authorized local setup only."""
 import argparse
+import gzip
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tarfile
@@ -20,6 +23,10 @@ VERSIONS = json.loads((ROOT / "assets/versions.json").read_text(encoding="utf-8"
 BEGIN, END = "<!-- kiss-chris-stack:start -->", "<!-- kiss-chris-stack:end -->"
 POLICY = (ROOT / "assets/global-stack-policy.md").read_text(encoding="utf-8").strip()
 ENV = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", CODEGRAPH_NO_DOWNLOAD="1", PYTHONIOENCODING="utf-8")
+MAX_RTK_ARCHIVE_BYTES = 128 * 1024 * 1024
+MAX_RTK_BINARY_BYTES = 128 * 1024 * 1024
+MAX_RTK_EXPANDED_BYTES = 256 * 1024 * 1024
+MAX_RTK_MEMBERS = 10000
 
 
 def command(name, *args):
@@ -58,7 +65,9 @@ def update_policy(path):
     if BEGIN in content:
         updated = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END), lambda _: block, content, flags=re.S)
     else:
-        separator = "" if not content else newline if content.endswith(newline) else newline * 2
+        separator = ""
+        if content:
+            separator = newline if content.endswith(newline) else newline * 2
         updated = content + separator + block + newline
     path.parent.mkdir(parents=True, exist_ok=True)
     if updated != content:
@@ -78,10 +87,62 @@ def mcp_matches(config):
     return config.get("enabled") is True and transport.get("type") == "stdio" and name == "codegraph" and transport.get("args") == ["serve", "--mcp"]
 
 
+def read_bounded(stream, limit):
+    data = stream.read(limit + 1)
+    if len(data) > limit:
+        raise RuntimeError("RTK artifact exceeds its resource limit; nothing installed.")
+    return data
+
+
+def read_zip_binary(archive, filename):
+    with zipfile.ZipFile(archive) as bundle:
+        entries = bundle.infolist()
+        if len(entries) > MAX_RTK_MEMBERS or sum(member.file_size for member in entries) > MAX_RTK_EXPANDED_BYTES:
+            raise RuntimeError("RTK archive exceeds its resource limit; nothing installed.")
+        members = [member for member in entries if Path(member.filename).name == filename]
+        if len(members) != 1:
+            raise RuntimeError("RTK archive must contain exactly one binary.")
+        member = members[0]
+        if member.is_dir() or stat.S_IFMT(member.external_attr >> 16) not in (0, stat.S_IFREG):
+            raise RuntimeError("RTK archive binary must be a regular file.")
+        if member.file_size > MAX_RTK_BINARY_BYTES:
+            raise RuntimeError("RTK binary exceeds its resource limit; nothing installed.")
+        with bundle.open(member) as stream:
+            return read_bounded(stream, MAX_RTK_BINARY_BYTES)
+
+
+def read_tar_binary(archive, filename):
+    binary, expanded = None, 0
+    with gzip.open(archive, "rb") as compressed:
+        tar_bytes = read_bounded(compressed, MAX_RTK_EXPANDED_BYTES)
+    with tarfile.open(fileobj=io.BytesIO(tar_bytes), mode="r|") as bundle:
+        for count, member in enumerate(bundle, 1):
+            expanded += member.size
+            if count > MAX_RTK_MEMBERS or expanded > MAX_RTK_EXPANDED_BYTES:
+                raise RuntimeError("RTK archive exceeds its resource limit; nothing installed.")
+            if Path(member.name).name != filename:
+                continue
+            if binary is not None or not member.isfile():
+                raise RuntimeError("RTK archive must contain exactly one binary, a regular file.")
+            if member.size > MAX_RTK_BINARY_BYTES:
+                raise RuntimeError("RTK binary exceeds its resource limit; nothing installed.")
+            with bundle.extractfile(member) as stream:
+                binary = read_bounded(stream, MAX_RTK_BINARY_BYTES)
+    if binary is None:
+        raise RuntimeError("RTK archive must contain exactly one binary.")
+    return binary
+
+
+def read_rtk_binary(archive, filename):
+    if archive.suffix == ".zip":
+        return read_zip_binary(archive, filename)
+    return read_tar_binary(archive, filename)
+
+
 def install_rtk():
     version = VERSIONS["rtk"]["version"]
     machine = platform.machine().lower()
-    architecture = "aarch64" if machine in ("arm64", "aarch64") else "x86_64" if machine in ("amd64", "x86_64") else None
+    architecture = {"arm64": "aarch64", "aarch64": "aarch64", "amd64": "x86_64", "x86_64": "x86_64"}.get(machine)
     targets = {("Windows", "x86_64"): "x86_64-pc-windows-msvc.zip", ("Darwin", "x86_64"): "x86_64-apple-darwin.tar.gz", ("Darwin", "aarch64"): "aarch64-apple-darwin.tar.gz", ("Linux", "x86_64"): "x86_64-unknown-linux-musl.tar.gz", ("Linux", "aarch64"): "aarch64-unknown-linux-gnu.tar.gz"}
     target = targets.get((platform.system(), architecture))
     if target is None:
@@ -91,26 +152,15 @@ def install_rtk():
     with tempfile.TemporaryDirectory(prefix="kiss-rtk-") as directory:
         archive = Path(directory) / asset
         with urllib.request.urlopen(base + asset, timeout=60) as response:
-            archive.write_bytes(response.read())
+            archive.write_bytes(read_bounded(response, MAX_RTK_ARCHIVE_BYTES))
         with urllib.request.urlopen(base + "checksums.txt", timeout=30) as response:
-            checksums = response.read().decode("utf-8")
+            checksums = read_bounded(response, 1024 * 1024).decode("utf-8")
         hashes = [line.split()[0] for line in checksums.splitlines() if line.split() and line.split()[-1].lstrip("*") == asset]
         if len(hashes) != 1 or hashlib.sha256(archive.read_bytes()).hexdigest().lower() != hashes[0].lower():
             raise RuntimeError("RTK archive checksum missing, ambiguous or mismatched; nothing installed.")
         filename = "rtk.exe" if platform.system() == "Windows" else "rtk"
-        # Read only the requested binary; do not extract arbitrary archive paths.
-        if asset.endswith(".zip"):
-            with zipfile.ZipFile(archive) as bundle:
-                members = [name for name in bundle.namelist() if Path(name).name == filename]
-                if len(members) != 1:
-                    raise RuntimeError("RTK archive does not contain exactly one binary.")
-                binary = bundle.read(members[0])
-        else:
-            with tarfile.open(archive) as bundle:
-                members = [member for member in bundle.getmembers() if member.isfile() and Path(member.name).name == filename]
-                if len(members) != 1:
-                    raise RuntimeError("RTK archive does not contain exactly one binary.")
-                binary = bundle.extractfile(members[0]).read()
+        # Read one bounded regular binary without expanding archive paths.
+        binary = read_rtk_binary(archive, filename)
         destination = Path.home() / ".local" / "bin" / filename
         destination.parent.mkdir(parents=True, exist_ok=True)
         staged = destination.with_suffix(destination.suffix + ".new")
@@ -120,6 +170,15 @@ def install_rtk():
     # Process-local only; the setup agent must prove visibility in its own shell.
     os.environ["PATH"] = str(destination.parent) + os.pathsep + os.environ.get("PATH", "")
     ENV["PATH"] = os.environ["PATH"]
+
+
+def resources():
+    manifest = json.loads((ROOT / "assets/bundle-manifest.json").read_text(encoding="utf-8"))
+    for relative, digest in manifest["sha256"].items():
+        source = (ROOT / relative).resolve()
+        if not source.is_relative_to(ROOT) or hashlib.sha256(source.read_bytes()).hexdigest() != digest:
+            raise RuntimeError(f"bundled resource missing or changed: {relative}")
+    return f"{len(manifest['sha256'])} bundled resources verified"
 
 
 def check(project, codex_home):
@@ -146,13 +205,6 @@ def check(project, codex_home):
         return package["version"]
     probe("CodeGraph npm package", codegraph_package)
     probe("RTK", lambda: command("rtk", "--version") if VERSIONS["rtk"]["version"] in command("rtk", "--version").split() else False)
-    def resources():
-        manifest = json.loads((ROOT / "assets/bundle-manifest.json").read_text(encoding="utf-8"))
-        for relative, digest in manifest["sha256"].items():
-            source = (ROOT / relative).resolve()
-            if not source.is_relative_to(ROOT) or hashlib.sha256(source.read_bytes()).hexdigest() != digest:
-                raise RuntimeError(f"bundled resource missing or changed: {relative}")
-        return f"{len(manifest['sha256'])} bundled resources verified"
     probe("bundled skills/resources", resources)
     def uiux_query():
         result = subprocess.run([sys.executable, str(ROOT / "skills/ui-ux-pro-max/scripts/search.py"), "accessible dashboard", "--domain", "ux", "--max-results", "1", "--json"], capture_output=True, text=True, encoding="utf-8", env=ENV, timeout=30)
@@ -165,8 +217,9 @@ def check(project, codex_home):
     override = codex_home / "AGENTS.override.md"
     if override.exists():
         probe("existing AGENTS.override policy", lambda: policy_current(override))
-    probe("CodeGraph index", lambda: (project / ".codegraph").is_dir())
-    if (project / ".codegraph").is_dir():
+    index = project / ".codegraph"
+    probe("CodeGraph index", index.is_dir)
+    if index.is_dir():
         probe("CodeGraph status", lambda: command("codegraph", "status", str(project)))
     probe("CodeGraph MCP registration", lambda: mcp_matches(mcp_config()))
     return checks, errors

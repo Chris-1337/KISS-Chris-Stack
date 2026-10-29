@@ -1,0 +1,6 @@
+interface:
+  display_name: "SonarQube Setup"
+  short_description: "Set up optional local SonarQube and quality gates."
+  default_prompt: "Use $setup-sonarqube to configure local containerized SonarQube, protected project credentials and stack-specific quality gates."
+policy:
+  allow_implicit_invocation: true

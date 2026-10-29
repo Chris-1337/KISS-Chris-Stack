@@ -31,6 +31,8 @@ The [shared language policy](assets/global-stack-policy.md#language) requires En
 
 ## Verify and repair
 
+After onboarding `/setup`, a usable Linux container engine triggers an optional offer to run [`/setup-sonarqube`](skills/setup-sonarqube/SKILL.md). Docker Desktop, Rancher Desktop (Docker CLI) and Podman are supported through their engine CLI. Without a usable engine, setup explains how to run the skill later and continues. Per-task readiness checks do not repeat the offer. Acceptance provisions local SonarQube, protected project `.env` credentials, actual component analysis and a dedicated gate: zero vulnerabilities, bugs and code smells, and at least 80% overall test coverage. Once configured, every goal requires fresh green gates before completion. See [SonarQube setup and limits](docs/SONARQUBE.md).
+
 Use `/setup` to check or repair local prerequisites. The internal read-only checker is also available:
 
 ```powershell

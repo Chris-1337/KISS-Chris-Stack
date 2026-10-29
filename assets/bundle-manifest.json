@@ -12,7 +12,7 @@
     "skills/ponytail-help/SKILL.md": "c4b353c9a13a9fd7008e319d1965816faaed13dcb61feb90afc514e50031706b",
     "skills/ponytail-review/SKILL.md": "affa0eedca467b58699fafbea28f6f85352aa3e7f23785964bf42f029a291504",
     "skills/rtk/SKILL.md": "08e04c6ff8d1de70978b132040e78a13e717d838f9a86fcb067721abe905428b",
-    "skills/setup/SKILL.md": "ca6e3e47472c245048ef77617b2e63b7af2e507c7784cd06e4e7b4667e1fe9a5",
+    "skills/setup/SKILL.md": "7a6734b359bf0a7df32dfb67c0151f118aa6eb41dcae840beb1ac1aa4a4f0d51",
     "skills/ui-ux-pro-max/SKILL.md": "6bb7ac50572108c09aaea0328d326499d15fe3560fa4b2f792d6d5d176186d72",
     "skills/ui-ux-pro-max/data/app-interface.csv": "331e7cf2c0b222d80c566c5f255c63cb339f65bfd02e471a720f28e4864a9f08",
     "skills/ui-ux-pro-max/data/catalog-summary.json": "65fe0b64480a8a827738297d0a64ca55c627d4afcb774fe4555c59cea8dd6905",
@@ -99,7 +99,7 @@
     "hooks/ponytail-statusline.sh": "985d4ff0a16ddf2b41e8cad67ec19c1412f89d487aca6ed1debd1e897a8b03d7",
     "hooks/ponytail-subagent.js": "91ebe14b77a75025bad71436fa493484c3df5615dc8f0edda40a8cb212979b7c",
     "hooks/qoder-hooks.json": "8801429a19ba61b80ab26662195517111bbdb2a679fa50b65785cc28e4571f35",
-    "hooks/stack.js": "c828ab789d1ac686c0938420784764b2ac4d2265d342db66e6d8e224e45e64f2",
+    "hooks/stack.js": "d1abab497426cb626038cbf2af0f1de98a8167aeb38a133e6f5d53dc8068745e",
     "hooks/band/board.ts": "9b0c21bcb49c1ee5910f8831cbfcb5d1aab0399bb60c4f6f1db69a55cb9a2e67",
     "hooks/band/logo.ts": "f9e45ded86563a67ce4c9e9ab7102b0d092c2214d50f72eb48b4ce2465cbadd0",
     "hooks/band/metrics.ts": "4a8b1f797dd43561cfb0997fe98c5e9deda352ecf195c1901962388263f5da08",
@@ -108,6 +108,10 @@
     "licenses/caveman-LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
     "licenses/caveman-NOTICE": "20112dc6e62e91da4f03c29fd10cfa41743a9c526389fdf1396c3649c18216fc",
     "licenses/ponytail-LICENSE": "f1af4301bd3b85026965f9f1cfa101b9bfd73a75c6b92f7a2a72bab5768abd36",
-    "licenses/ui-ux-pro-max-LICENSE": "738f69dfa83db5c347c678fb9d90e560877059f0de93a327c39001bff92dc014"
+    "licenses/ui-ux-pro-max-LICENSE": "738f69dfa83db5c347c678fb9d90e560877059f0de93a327c39001bff92dc014",
+    "skills/setup-sonarqube/SKILL.md": "33296fbefb0e570171d5328323cc8fd5203c59ddec79681e257418b69f338f1d",
+    "skills/setup-sonarqube/agents/openai.yaml": "5bcd78244a41a2f6e7e8c5509523a080fe990bdd4da55e2e88062b87a0387978",
+    "skills/setup-sonarqube/scripts/check-container-runtime.py": "38d829199bb7c8af2a025f5c7c5c7f8a41e106737a3c2564c0144d77bce0178c",
+    "skills/setup-sonarqube/scripts/read-analysis.py": "62e070233e4111975a45a2a3d9d11a8808dd776020ca541ad89eec76684496b7"
   }
 }

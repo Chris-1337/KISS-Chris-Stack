@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 try {
   const event = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
