@@ -4,7 +4,7 @@
     "skills/caveman/README.md": "e8b22f37ccb204bd00cdf98c723c0df37aeda1f5863e9ad1d634f5c839d99e5d",
     "skills/caveman/SKILL.md": "415d43518f2b1a9498c15a445d4657117b129ee5e81b19454ce348439cc6672b",
     "skills/codegraph/SKILL.md": "cbf605c4001d01b13e55f0264741855afa486fc066a8f07dfcbd2b9c752bd397",
-    "skills/kiss-chris-stack/SKILL.md": "6e0acab9817d497501bd2d88764876a97061d6edd38355df788aae4d6fce0e14",
+    "skills/kiss-chris-stack/SKILL.md": "ad99dc375b2c96f4ff118ce4167833a3462e10747c66dbf1669e2e87c5661123",
     "skills/ponytail/SKILL.md": "f18008471528f0adde90a560d053f85935eed5cee26c447b7177ad24472bcf32",
     "skills/ponytail-audit/SKILL.md": "3ab632ce4695de214dafe4db13d6f939e1c4be328bd0754ea751dc28b70be554",
     "skills/ponytail-debt/SKILL.md": "f0b59cb7e623f68568f2164864c757d41f0452d176c2f28b5b9b3c6b7ef3a799",
@@ -109,9 +109,11 @@
     "licenses/caveman-NOTICE": "20112dc6e62e91da4f03c29fd10cfa41743a9c526389fdf1396c3649c18216fc",
     "licenses/ponytail-LICENSE": "f1af4301bd3b85026965f9f1cfa101b9bfd73a75c6b92f7a2a72bab5768abd36",
     "licenses/ui-ux-pro-max-LICENSE": "738f69dfa83db5c347c678fb9d90e560877059f0de93a327c39001bff92dc014",
-    "skills/setup-sonarqube/SKILL.md": "33296fbefb0e570171d5328323cc8fd5203c59ddec79681e257418b69f338f1d",
+    "skills/setup-sonarqube/SKILL.md": "b07e4266c4620bd41a791071e929583160e802df185f742196978fffab783327",
     "skills/setup-sonarqube/agents/openai.yaml": "5bcd78244a41a2f6e7e8c5509523a080fe990bdd4da55e2e88062b87a0387978",
     "skills/setup-sonarqube/scripts/check-container-runtime.py": "38d829199bb7c8af2a025f5c7c5c7f8a41e106737a3c2564c0144d77bce0178c",
-    "skills/setup-sonarqube/scripts/read-analysis.py": "62e070233e4111975a45a2a3d9d11a8808dd776020ca541ad89eec76684496b7"
+    "skills/setup-sonarqube/scripts/read-analysis.py": "62e070233e4111975a45a2a3d9d11a8808dd776020ca541ad89eec76684496b7",
+    "skills/evaluate/SKILL.md": "cc738c8f3ca48f39030ac10e4f473254de06f7f50fa40578ba0538b32519eaaa",
+    "scripts/evaluation-config.py": "72aa5288735221789ba3bd8375da5e128d0e3214f03fb9d614430101a690a6df"
   }
 }

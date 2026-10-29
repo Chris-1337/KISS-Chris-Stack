@@ -1,0 +1,6 @@
+{
+  "evaluation": {
+    "live": { "enabled": true },
+    "sonarqube": { "enabled": true }
+  }
+}
