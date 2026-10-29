@@ -1,0 +1,10 @@
+# Goal: README fit and roadmap
+
+- Target: help readers judge when the plugin's workflow is useful and distinguish future improvements from current behavior.
+- Change: added English fit/limitations and roadmap sections near the top of `README.md`, including the user's examples and further points grounded in the existing architecture, setup, and evaluation policies.
+- Why: the full setup and separated agent roles provide structure and evidence for larger changes, but impose overhead on tiny tasks and quick lookups. Routing and model/reasoning selection are future directions, without promised savings or delivery dates.
+- Affected locations: `README.md` and this trace only; runtime behavior, policy, configuration, and dependencies are unchanged.
+- Checks: the separate test agent demonstrated 13 expected RED failures with the temporary ignored document contract before implementation. Implementation and independent evaluation results are recorded after execution.
+- Limits: this is documentation only. No routing, model selection, measurement, or compatibility feature was implemented; live runtime/browser proof is inapplicable to the prose change. Existing documentation supplies architecture/evaluation context without duplicating it under `docs/`.
+
+- Independent evaluation: document contract passed all 13 checks; all original README content was preserved and all 17 local Markdown link targets exist. Manual review checked fit/limitations against the current architecture and policy, and confirmed every roadmap item is explicitly a future direction. The full repository suite passed 148 tests with fresh Python line/branch coverage of 96% and Node hook coverage of 100%; `git diff --check` passed. Live runtime and browser checks are inapplicable to this documentation-only change. Enabled SonarQube verification and final source fingerprints are recorded separately in ignored `.sonar-evidence/readme-evidence.json`, `readme-source-fingerprint.json`, and `scanner-readme.log`; those executable artifacts determine the final gate result.

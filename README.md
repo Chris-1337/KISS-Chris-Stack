@@ -4,6 +4,32 @@ A complete Codex plugin for context-first goals and separate test, implementatio
 
 Project-original material is [MIT licensed](LICENSE). Bundled third-party components retain their [own licenses and notices](docs/THIRD-PARTY.md). See [contributing](CONTRIBUTING.md), [security reporting](SECURITY.md), and [publication setup](docs/GITHUB-PUBLICATION.md).
 
+## Plugin is good for / not so good for
+
+**Good for:**
+
+- **New features and larger tasks:** turn work across multiple files or components into a clear goal with separate test, implementation, and evaluation roles.
+- **Making projects agent-ready:** establish evidence-backed architecture documentation, decisions, agent traces, and verified local tooling.
+- **Refactorings and regression-sensitive fixes:** use existing context and call paths, preserve behavior, and verify the result independently.
+- **Work that needs reviewable evidence:** keep acceptance criteria, tests, applicable live checks, and configured quality gates tied to the actual change.
+
+**Not so good for:**
+
+- **Tiny tasks:** a typo, one-line edit, or other trivial change can cost more in setup, context gathering, and agent coordination overhead than the change itself.
+- **Quick questions and one-off lookups:** the full workflow adds little value when no implementation or independent verification is needed.
+- **Environments without the required tooling or permissions:** missing runtimes, unavailable MCP tools, or an unreachable configured quality service must be resolved before work can complete.
+- **Replacing product or domain decisions:** the stack organizes implementation and verification; unclear requirements still need human input.
+
+## Roadmap
+
+These are future directions, not implemented capabilities or delivery commitments:
+
+- **Task routing:** choose a proportionate workflow by task size and risk, so not every task needs the full stack while necessary validation and permission boundaries remain intact.
+- **Model and reasoning selection:** choose the model and reasoning effort for each sub-agent and task to reduce token costs while preserving the required quality.
+- **Simpler onboarding and recovery:** reduce manual steps around prerequisites, MCP visibility, and host reloads while preserving normal hook trust and explicit permissions.
+- **Measured overhead:** compare token use, elapsed time, and verification outcomes across task sizes to guide routing and model choices with evidence.
+- **Broader compatibility evidence:** verify fresh-machine installation and trusted hook execution across supported hosts and platforms, and document remaining gaps.
+
 ## Install through the repository marketplace
 
 Add the GitHub repository marketplace directly; no manual clone or checkout is required:
