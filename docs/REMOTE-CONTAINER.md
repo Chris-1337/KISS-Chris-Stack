@@ -14,6 +14,8 @@ The SSH listener is published only on `127.0.0.1:2222`. Password/root login and 
 
 The SSH daemon starts as root to protect its server host keys and switch user identities. Authenticated sessions and agent commands run as the unprivileged `node` user. This intentional daemon privilege is separate from allowing root login, which remains disabled.
 
+`sonar-project.properties` grants an explicit exception to `docker:S6471` only for `containers/remote/Dockerfile` because this image runs that SSH daemon. All other rules and quality-gate thresholds remain active. Revisit the exception if the entrypoint, SSH user switching or host-key ownership changes; the daemon still has root privileges inside the container.
+
 ## Prepare the environment
 
 Prerequisites on the host: Docker with Compose, Python 3.10+, OpenSSH (`ssh` and `ssh-keygen`), and a Codex desktop app with SSH connections. Node.js, Python, Git and Codex CLI are installed inside the image. The image uses Debian 13 because the pinned Linux ARM64 RTK binary requires a newer glibc than Debian 12 provides.
