@@ -71,6 +71,12 @@ Open the official verification URL printed by Codex, enter its one-time code and
 
 Do not paste callback URLs or tokens into chats, and do not copy your host `auth.json` into the image or repository. Credentials created by this login stay in the container's home volume. See [headless authentication](https://learn.chatgpt.com/docs/auth#login-on-headless-devices).
 
+## Verify the desktop setup
+
+After signing in and approving the plugin hooks, run `/setup` for `/work`. Allow the normal host reload if setup reports that CodeGraph MCP needs it, then repeat the readiness check.
+
+In the remote chat, ask the agent to report `whoami` and `pwd`, create/read/delete a temporary file under `/work`, and call the actual CodeGraph MCP status tool for `/work`. Expect user `node`, project `/work`, successful file operations and a successful MCP tool call. CLI registration alone does not complete this check. Stop and prepare the environment again to check that your project and sign-in persist.
+
 ## Permissions and persistence
 
 Docker is the execution boundary. The container config explicitly uses `sandbox_mode = "danger-full-access"` and `approval_policy = "on-request"`: Codex can access everything available to the non-root `node` user inside this environment, including its own login files. Hook trust is still required. Restricted Codex modes need a working nested Linux sandbox; the unprivileged Compose profile does not grant the namespace permissions that bubblewrap requires. See [Codex in containers](https://learn.chatgpt.com/docs/agent-approvals-security).
