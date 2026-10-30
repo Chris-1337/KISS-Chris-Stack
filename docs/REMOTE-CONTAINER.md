@@ -95,4 +95,6 @@ docker compose -f containers/remote/compose.yaml stop
 
 Restart using the same preparation command. Do not use `down -v` or volume pruning as a routine restart: the volumes contain projects, authentication and host identity.
 
-The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Windows and fresh interactive desktop onboarding are not claimed as verified by the automated checks.
+Validation covers ARM64 containers and Linux/AMD64 containers emulated on Apple Silicon. On an x86-64 Docker engine, use the same preparation command; no platform override is required.
+
+The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Native x86 hardware, Windows hosts and fresh interactive desktop onboarding are not claimed as verified by the automated checks.
