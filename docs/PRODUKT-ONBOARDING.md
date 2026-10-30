@@ -19,7 +19,7 @@ flowchart TD
     H[Codex: plugin enabled, hooks trusted] --> E[Root event]
     E --> P{Root project config exists?}
     P -->|No| S[Setup: runtime and documentation bootstrap]
-    P -->|Yes| R[Current runtime checks, no reinitialization]
+    P -->|Yes| R[Add missing config defaults, then runtime checks]
     R --> M
     S --> M[Real MCP tool call in this session]
     M --> C[Read documentation, traces, code, and designs]
@@ -46,7 +46,7 @@ flowchart TD
 
 ## Usage
 
-The [shared policy](../assets/global-stack-policy.md) remains authoritative. Installation onboarding takes priority over root readiness instructions until its consent/path dialogue ends. For later ordinary tasks, project-root `kiss-chris-stack.config.json` is the sole initialization indicator: absence invokes setup; presence requires strict validation and fresh runtime/MCP checks without repeated project initialization. Setup creates a missing default config only after successful runtime/session MCP and documentation bootstrap; existing settings remain intact. Invalid configuration blocks setup. Sub-agents do not start recursive goals or setup chains. `docs/` contains human architecture, business decisions, and ADRs; `agent-traces/<component>/` contains brief evidenced goal notes. First-time setup and explicit `/setup` fill documentation gaps and preserve existing files. Documentation and internal reasoning use English; user-facing communication follows the language of the prompt, as recorded in [ADR 0003](adr/0003-documentation-language.md).
+The [shared policy](../assets/global-stack-policy.md) remains authoritative. Installation onboarding takes priority over root readiness instructions until its consent/path dialogue ends. For later ordinary tasks, project-root `kiss-chris-stack.config.json` is the sole initialization indicator: absence invokes setup; presence requires the root to execute the hook-provided `evaluation-config.py --update` argv, validating configuration and adding only missing current defaults before fresh runtime/MCP checks without repeated project initialization. Explicit values remain unchanged. The bare hook remains read-only; pending/declined installation onboarding and delegated roles do not run this updater. Setup creates a missing default config only after successful runtime/session MCP and documentation bootstrap; existing settings remain intact. Invalid configuration blocks setup. Sub-agents do not start recursive goals or setup chains. `docs/` contains human architecture, business decisions, and ADRs; `agent-traces/<component>/` contains brief evidenced goal notes. First-time setup and explicit `/setup` fill documentation gaps and preserve existing files. Documentation and internal reasoning use English; user-facing communication follows the language of the prompt, as recorded in [ADR 0003](adr/0003-documentation-language.md).
 
 ## Features
 

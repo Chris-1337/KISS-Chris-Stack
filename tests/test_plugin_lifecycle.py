@@ -145,6 +145,27 @@ def _root_context(fixture, event="UserPromptSubmit"):
     return json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
 
 
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+def test_configured_hook_requests_bundled_config_backfill_before_readiness(isolated_plugin, event):
+    plugin, project, profile, _ = isolated_plugin
+    path = project / "kiss-chris-stack.config.json"
+    original = b'{"evaluation":{"live":{"enabled":false}}}'
+    path.write_bytes(original)
+    context = _root_context(isolated_plugin, event)
+    prefix = "Configuration update command (argv): "
+    assert prefix in context, "Supply a concrete argv array rather than shell-evaluated project paths"
+    arguments, _ = json.JSONDecoder().raw_decode(context.split(prefix, 1)[1])
+    assert arguments == ["python", str(plugin / "scripts/evaluation-config.py"), "--project", str(project), "--update"]
+    assert context.lower().index("onboarding") < context.index("--update")
+    assert context.index("--update") < context.lower().index("runtime readiness"), "Backfill current defaults before runtime readiness"
+    assert path.read_bytes() == original, "Hook context must not mutate config before onboarding is resolved"
+    assert list(project.iterdir()) == [path] and list(profile.iterdir()) == []
+    delegated = _hook(isolated_plugin, {"hook_event_name": "SubagentStart", "cwd": str(project), "agent_type": "test-author"})
+    assert delegated.returncode == 0, delegated.stderr
+    assert "--update" not in json.loads(delegated.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert path.read_bytes() == original
+
+
 @pytest.mark.parametrize("plan_mode", [False, True])
 def test_root_hook_preserves_plan_mode_and_requires_goal_approval_when_enabled(isolated_plugin, plan_mode):
     _, project, profile, _ = isolated_plugin

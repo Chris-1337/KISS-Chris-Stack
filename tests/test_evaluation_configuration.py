@@ -1,6 +1,8 @@
 """Evaluation switches and the live-evidence workflow contract."""
 import importlib.util
 import json
+import os
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -128,6 +130,175 @@ def test_plan_mode_rejects_non_boolean_values(tmp_path, plan_mode):
     assert result.returncode != 0
     assert "boolean" in result.stderr.lower(), "Reject wrong types explicitly instead of coercing them"
     assert not result.stdout.strip()
+
+
+@pytest.mark.parametrize("settings", [
+    {}, {"evaluation": {"live": {"enabled": False}}},
+    {"plan-mode": True, "evaluation": {"sonarqube": {"enabled": False}}},
+    {"evaluation": {"live": {}, "sonarqube": {}}},
+])
+def test_update_persists_only_missing_default_fields(tmp_path, settings):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    path.write_text(json.dumps(settings), encoding="utf-8-sig")
+    mode = stat.S_IMODE(path.stat().st_mode)
+    expected = {
+        "plan-mode": settings.get("plan-mode", False),
+        "evaluation": {
+            key: {"enabled": settings.get("evaluation", {}).get(key, {}).get("enabled", True)}
+            for key in ("live", "sonarqube")
+        },
+    }
+    result = run_config(tmp_path, "--update")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(path.read_text(encoding="utf-8-sig")) == expected
+    assert json.loads(result.stdout) == expected
+    assert stat.S_IMODE(path.stat().st_mode) == mode
+    assert list(tmp_path.iterdir()) == [path], "An update must clean its own staging file"
+
+
+def test_update_of_complete_configuration_preserves_bytes_and_mtime(tmp_path):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    configuration = {"plan-mode": True, "evaluation": {"live": {"enabled": False}, "sonarqube": {"enabled": False}}}
+    original = ("\ufeff" + json.dumps(configuration, indent=4) + "\r\n").encode("utf-8")
+    path.write_bytes(original)
+    os.utime(path, ns=(1_600_000_000_000_000_000, 1_600_000_000_000_000_000))
+    previous_mtime = path.stat().st_mtime_ns
+    result = run_config(tmp_path, "--update")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == configuration
+    assert path.read_bytes() == original
+    assert path.stat().st_mtime_ns == previous_mtime
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_update_does_not_initialize_a_missing_configuration(tmp_path):
+    result = run_config(tmp_path, "--update")
+    assert list(tmp_path.iterdir()) == [], "Only successful setup may create the initialization marker"
+    if result.returncode == 0:
+        assert json.loads(result.stdout) == DEFAULTS
+    else:
+        assert result.stderr.strip() and not result.stdout.strip()
+
+
+@pytest.mark.parametrize("content", [
+    "{broken", '{"unknown":true}', '{"plan-mode":false,"plan-mode":true}',
+    '{"plan-mode":1}', '{"evaluation":{"live":false}}',
+])
+def test_update_rejects_invalid_configuration_without_writing(tmp_path, content):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = content.encode("utf-8")
+    path.write_bytes(original)
+    result = run_config(tmp_path, "--update")
+    assert result.returncode != 0
+    assert result.stderr.strip() and not result.stdout.strip()
+    assert path.read_bytes() == original
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_update_rejects_a_directory_target(tmp_path):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    path.mkdir()
+    result = run_config(tmp_path, "--update")
+    assert result.returncode != 0
+    assert result.stderr.strip() and not result.stdout.strip()
+    assert path.is_dir() and list(path.iterdir()) == []
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_update_rejects_readonly_partial_configuration_without_staging_leaks(tmp_path):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = b'{"plan-mode":true}'
+    path.write_bytes(original)
+    mode = path.stat().st_mode
+    path.chmod(mode & ~stat.S_IWUSR)
+    try:
+        result = run_config(tmp_path, "--update")
+        assert result.returncode != 0
+        assert result.stderr.strip() and not result.stdout.strip()
+        assert path.read_bytes() == original
+        assert not path.stat().st_mode & stat.S_IWUSR
+        assert list(tmp_path.iterdir()) == [path], "A refused readonly update must not leave its staging file"
+    finally:
+        path.chmod(mode)
+        for created in tmp_path.iterdir():
+            if created != path:
+                created.chmod(created.stat().st_mode | stat.S_IWUSR)
+
+
+def test_update_rejects_a_symlink_target(config_module, tmp_path, monkeypatch, capsys):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = b'{}'
+    path.write_bytes(original)
+    is_symlink = Path.is_symlink
+    checked = []
+
+    def symlink_target(candidate):
+        if candidate == path:
+            checked.append(candidate)
+            return True
+        return is_symlink(candidate)
+
+    monkeypatch.setattr(Path, "is_symlink", symlink_target)
+    monkeypatch.setattr(sys, "argv", [str(HELPER), "--project", str(tmp_path), "--update"])
+    with pytest.raises(SystemExit) as error:
+        config_module.main()
+    assert error.value.code == 2
+    assert checked, "The update target must be checked before replacement"
+    assert path.read_bytes() == original
+    assert not capsys.readouterr().out.strip()
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_failed_atomic_replace_preserves_original_and_cleans_staging(config_module, tmp_path, monkeypatch, capsys):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = b'{"plan-mode":true}'
+    path.write_bytes(original)
+    replacements = []
+
+    def fail_replace(source, destination, *args, **kwargs):
+        replacements.append((source, destination))
+        assert Path(destination) == path
+        assert Path(source).parent == tmp_path, "Stage beside the target for atomic replacement"
+        assert json.loads(Path(source).read_text(encoding="utf-8-sig"))["plan-mode"] is True
+        assert path.read_bytes() == original
+        raise PermissionError("test replacement failure")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    monkeypatch.setattr(sys, "argv", [str(HELPER), "--project", str(tmp_path), "--update"])
+    with pytest.raises(SystemExit) as error:
+        config_module.main()
+    assert error.value.code == 2
+    assert replacements, "A partial configuration must reach atomic replacement"
+    assert path.read_bytes() == original
+    assert list(tmp_path.iterdir()) == [path]
+    captured = capsys.readouterr()
+    assert "test replacement failure" in captured.err and not captured.out.strip()
+
+
+def test_update_refuses_concurrent_configuration_change(config_module, tmp_path, monkeypatch, capsys):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    path.write_bytes(b'{}')
+    concurrent = b'{"plan-mode":true}'
+    read_bytes = Path.read_bytes
+    snapshots = []
+
+    def concurrent_read(candidate):
+        data = read_bytes(candidate)
+        if candidate == path and not snapshots:
+            snapshots.append(data)
+            path.write_bytes(concurrent)
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", concurrent_read)
+    monkeypatch.setattr(sys, "argv", [str(HELPER), "--project", str(tmp_path), "--update"])
+    with pytest.raises(SystemExit) as error:
+        config_module.main()
+    assert error.value.code == 2
+    assert snapshots, "Read an original byte snapshot before trying to update"
+    assert read_bytes(path) == concurrent, "A concurrent edit must win over default backfill"
+    assert list(tmp_path.iterdir()) == [path]
+    captured = capsys.readouterr()
+    assert captured.err.strip() and not captured.out.strip()
 
 
 @pytest.mark.parametrize("configuration", [
