@@ -47,6 +47,20 @@ After adding the plugin, [onboarding](skills/onboarding/SKILL.md) asks whether t
 
 Prerequisites: a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for bundled searches/setup checks. Missing runtimes require local installation and possibly host reload. Enable the plugin and review/trust the hook definition through the normal host UI. Never bypass review.
 
+## Optional: encapsulated execution environment
+
+Run the plugin in its own Docker environment and connect the Codex desktop app to it over local SSH. The desktop remains the graphical interface; Codex, plugin policies, MCP tools, project files and authentication live inside the container.
+
+With Docker Compose, Python 3.10+ and OpenSSH available, run from a checkout of this repository:
+
+```sh
+python3 containers/remote/prepare.py
+```
+
+This builds the plugin from the current checkout, starts the environment, creates a dedicated local SSH identity, and writes a pinned SSH configuration fragment. It does not edit your existing SSH configuration, copy your credentials or approve hooks. Follow the [remote container guide](docs/REMOTE-CONTAINER.md) to add the connection, sign in and open `/work` in the desktop app.
+
+Docker provides the isolation boundary in this optional mode. Read the guide's permissions and persistence notes before starting it; the ordinary marketplace installation above is unchanged.
+
 ## What happens on a task
 
 Trusted SessionStart and UserPromptSubmit hooks inspect project-root `kiss-chris-stack.config.json` for ordinary tasks. Missing configuration means first-time setup; existing configuration means the root executes the hook-provided configuration-update argv before current readiness checks, adding only missing current defaults without repeated project initialization. The bare hook stays read-only so pending or declined installation onboarding cannot change configuration. Documentation contents do not determine setup status. Installation consent/path replies stay in onboarding before this routing, including a declined setup.
