@@ -12,6 +12,34 @@ The separate evaluation agent follows [evaluate](../skills/evaluate/SKILL.md). T
 }
 ```
 
+## Settings reference
+
+The JSON root is an object. `evaluation` is an object grouping the two independent gates; `evaluation.live` and `evaluation.sonarqube` are objects containing their `enabled` boolean. These containers are not booleans themselves. The only supported leaf settings are:
+
+| Setting | Default | `true` | `false` |
+| --- | --- | --- | --- |
+| `plan-mode` | `false` | Present the registered goal, request explicit approval and yield before dispatching test, implementation or evaluation roles. | Continue automatically after goal registration. |
+| `evaluation.live.enabled` | `true` | Require applicable functional proof against the actual project; use document/contract checks for documentation-only work. | Skip the live evaluation gate; keep ordinary goal tests. |
+| `evaluation.sonarqube.enabled` | `true` | Require fresh current-source, analysis-specific green quality gates for every relevant configured SonarQube project. | Skip scanner, readback and token operations; preserve service configuration, credentials and data. |
+
+Defaults apply independently to omitted settings and containers. Only literal JSON `true` and `false` are accepted for leaves: strings such as `"false"`, numbers such as `0`, and `null` are invalid. Unknown keys and duplicate keys at any depth are rejected by the [resolver](../scripts/evaluation-config.py). Feedback learning follows the [project feedback workflow](LEARNING.md); there is no supported learning switch in this file.
+
+For example, to review each goal before implementation while retaining live proof and deliberately skipping SonarQube:
+
+```json
+{
+  "plan-mode": true,
+  "evaluation": {
+    "live": { "enabled": true },
+    "sonarqube": { "enabled": false }
+  }
+}
+```
+
+This is an optional example, not this repository's active configuration. Approval and gate switches are independent; disabling a gate does not disable tests, readiness checks or feedback review. Agents must not change a value merely to bypass a failing check.
+
+## Approval, initialization and updates
+
 Top-level `plan-mode` defaults to `false`, preserving automatic execution after goal registration, including for existing files without this key. Set it to `true` to have the root present the strong registered goal, request explicit user approval and end its turn before dispatching test, implementation or evaluation agents. Approval resumes the same goal; a changed goal requires renewed approval. Rejection, silence, elapsed time and pending replies do not authorize implementation. Setup and context collection happen before this gate. This is an agent workflow rule, not a switch for the host's collaboration mode; live and SonarQube evaluation remain independent.
 
 This root file is also the project's initialization indicator. First-time [setup](../skills/setup/SKILL.md) creates it with these defaults only after successful runtime readiness, a real session MCP call and documentation bootstrap. Existing configuration is strictly validated and updated only by adding missing current defaults; explicit values are preserved. Ordinary hooks use its absence to select initialization and its presence to supply an updater argv for the root before current readiness checks without reinitialization; documentation folders are not setup markers. Explicit `/setup` can still fill documentation gaps. A failed/reload-required initial setup leaves the file absent. Installation [onboarding](../skills/onboarding/SKILL.md) asks for consent and then an explicit existing project path before setup begins.

@@ -57,11 +57,35 @@ Project-root `kiss-chris-stack.config.json` also supports top-level `"plan-mode"
 
 Sub-agents receive only their assigned role under the same goal. They do not start another setup, goal or recursive agent group. Upstream Ponytail lifecycle hooks run alongside stack hooks.
 
-`docs/` holds human architecture, business decisions and ADRs. `agent-traces/<component>/` holds brief records of implemented goals. First-time setup and explicit `/setup` fill only evidence-backed gaps and preserve existing documents; empty projects receive only the structure. Automatic readiness checks in configured projects do not reinitialize missing documentation.
+`docs/` holds human architecture, business decisions and ADRs. `agent-traces/<component>/` holds brief records of implemented goals. First-time setup and explicit `/setup` fill only evidence-backed gaps and preserve existing documents; empty projects receive only the structure and generic feedback protocol. Automatic readiness checks in configured projects do not reinitialize missing documentation.
+
+Actionable user feedback is retained in [`agent-traces/user-feedback/`](agent-traces/user-feedback/README.md). Agents record corrections with concrete prevention actions, review relevant lessons before future goals, and include them in the separate roles' acceptance checks. Setup creates the generic feedback protocol even in empty projects, preserving existing entries; this is project memory maintained by the agent, not model training or a background service. See [learning from feedback](docs/LEARNING.md) for the workflow, an example and its limits.
 
 The [shared language policy](assets/global-stack-policy.md#language) requires English documentation and internal reasoning; user-facing communication follows the language of the prompt. See [ADR 0003](docs/adr/0003-documentation-language.md).
 
 The independent [evaluation step](skills/evaluate/SKILL.md) proves affected functionality in the running project, started directly or with Docker Compose. Frontend changes require real browser/Playwright interactions and assertions; the agent automatically installs missing CLI/headless Chromium dependencies when needed. Project-root [kiss-chris-stack.config.json](kiss-chris-stack.config.json) independently enables/disables `evaluation.live.enabled` and `evaluation.sonarqube.enabled`. Both default to `true`; SonarQube applies to configured projects. Set a switch to `false` for an explicit reported skip. See [configuration and evidence](docs/EVALUATION.md).
+
+## Project configuration
+
+Project-root `kiss-chris-stack.config.json` uses these defaults:
+
+```json
+{
+  "plan-mode": false,
+  "evaluation": {
+    "live": { "enabled": true },
+    "sonarqube": { "enabled": true }
+  }
+}
+```
+
+| Setting | Default | `true` | `false` |
+| --- | --- | --- | --- |
+| `plan-mode` | `false` | Present the registered goal and wait for explicit approval before dispatching the three roles. | Continue automatically after goal registration. |
+| `evaluation.live.enabled` | `true` | Require applicable live functional proof; documentation-only tasks use document/contract checks. | Skip the live gate; ordinary tests still apply. |
+| `evaluation.sonarqube.enabled` | `true` | Require fresh green quality gates for configured SonarQube projects. | Skip scanner, readback and token operations; preserve service configuration and data. |
+
+Values must be JSON booleans; quoted strings, numbers and unknown keys are invalid. Disabled gates are reported as skipped, never passed. Setup creates the file only after successful initialization; later ordinary tasks add missing defaults without overriding explicit values. Feedback learning has no configuration switch. See the [complete configuration reference](docs/EVALUATION.md) for containers, examples, validation and update behavior.
 
 ## Verify and repair
 

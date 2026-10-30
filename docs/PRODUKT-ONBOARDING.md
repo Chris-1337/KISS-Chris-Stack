@@ -23,7 +23,8 @@ flowchart TD
     R --> M
     S --> M[Real MCP tool call in this session]
     M --> C[Read documentation, traces, code, and designs]
-    C --> G[Strong native goal]
+    C --> F[Review relevant feedback and derive acceptance checks]
+    F --> G[Strong native goal]
     G --> PMode{plan-mode?}
     PMode -->|false: default| T[Test agent: RED]
     PMode -->|true| A[Present goal, request approval, end turn]
@@ -56,6 +57,7 @@ The [shared policy](../assets/global-stack-policy.md) remains authoritative. Ins
 - Current readiness checks instead of cached success flags.
 - Marker-managed global rules preserving unrelated configuration.
 - Context before the goal and independent evaluation.
+- [Learning from feedback](LEARNING.md): retain scoped lessons, review them before goals and carry prevention checks to all three roles.
 
 ## Limits
 
