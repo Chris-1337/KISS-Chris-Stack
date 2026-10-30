@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Resolve project evaluation switches without changing files or running commands."""
+"""Resolve project workflow and evaluation switches without changing files or running commands."""
 import argparse
 import json
 from pathlib import Path
 
 
-DEFAULTS = {"evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+DEFAULTS = {"plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
 
 
 def unique_object(pairs):

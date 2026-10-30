@@ -1,7 +1,7 @@
 interface:
   display_name: "KISS-Chris-Stack"
   short_description: "Gather context and orchestrate separate TDD agents."
-  default_prompt: "Use $kiss-chris-stack to inspect documentation and code, define the goal, and orchestrate separate test, implementation, and evaluation agents."
+  default_prompt: "Use $kiss-chris-stack to inspect documentation and code, define the goal, honor configured plan-mode approval, and orchestrate separate test, implementation, and evaluation agents."
 dependencies:
   tools:
     - type: "mcp"

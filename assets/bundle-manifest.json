@@ -4,7 +4,7 @@
     "skills/caveman/README.md": "e8b22f37ccb204bd00cdf98c723c0df37aeda1f5863e9ad1d634f5c839d99e5d",
     "skills/caveman/SKILL.md": "415d43518f2b1a9498c15a445d4657117b129ee5e81b19454ce348439cc6672b",
     "skills/codegraph/SKILL.md": "cbf605c4001d01b13e55f0264741855afa486fc066a8f07dfcbd2b9c752bd397",
-    "skills/kiss-chris-stack/SKILL.md": "ad99dc375b2c96f4ff118ce4167833a3462e10747c66dbf1669e2e87c5661123",
+    "skills/kiss-chris-stack/SKILL.md": "e203da36a34b26f2925b4d9cc17788b921f444973614a23b6fbc44ddcbb8bc2f",
     "skills/ponytail/SKILL.md": "f18008471528f0adde90a560d053f85935eed5cee26c447b7177ad24472bcf32",
     "skills/ponytail-audit/SKILL.md": "3ab632ce4695de214dafe4db13d6f939e1c4be328bd0754ea751dc28b70be554",
     "skills/ponytail-debt/SKILL.md": "f0b59cb7e623f68568f2164864c757d41f0452d176c2f28b5b9b3c6b7ef3a799",
@@ -12,7 +12,7 @@
     "skills/ponytail-help/SKILL.md": "c4b353c9a13a9fd7008e319d1965816faaed13dcb61feb90afc514e50031706b",
     "skills/ponytail-review/SKILL.md": "affa0eedca467b58699fafbea28f6f85352aa3e7f23785964bf42f029a291504",
     "skills/rtk/SKILL.md": "08e04c6ff8d1de70978b132040e78a13e717d838f9a86fcb067721abe905428b",
-    "skills/setup/SKILL.md": "7a6734b359bf0a7df32dfb67c0151f118aa6eb41dcae840beb1ac1aa4a4f0d51",
+    "skills/setup/SKILL.md": "385a6833127fff86a1521b825e0611a37e580db2ca477123fab82e9f7cb3248a",
     "skills/ui-ux-pro-max/SKILL.md": "6bb7ac50572108c09aaea0328d326499d15fe3560fa4b2f792d6d5d176186d72",
     "skills/ui-ux-pro-max/data/app-interface.csv": "331e7cf2c0b222d80c566c5f255c63cb339f65bfd02e471a720f28e4864a9f08",
     "skills/ui-ux-pro-max/data/catalog-summary.json": "65fe0b64480a8a827738297d0a64ca55c627d4afcb774fe4555c59cea8dd6905",
@@ -82,7 +82,7 @@
     "skills/ui-ux-pro-max/data/stacks/winui.csv": "e676dc1c13ee6c205c40b0746f1335150a346c7a49a0616d2545bc3d2c930c85",
     "skills/ui-ux-pro-max/data/stacks/wpf.csv": "9781a9950b20333637b30a02e498b7efca21b618a3eeb8665836f3ac6e974da7",
     "skills/setup/agents/openai.yaml": "8548570d57b8b1384f6f15ef45f5aeb52bd8fab21c60bfeb2ccf13cfa8f032dd",
-    "skills/kiss-chris-stack/agents/openai.yaml": "d66b7a0ec78e988d4c0e8ae52078145f74cc08d7d1b900e4b77ea7255d2b5f3d",
+    "skills/kiss-chris-stack/agents/openai.yaml": "c6d80f4c3a041f6c1b07914de9c9f90b6d8e95c63c3e5bcec796d79cbf7afe92",
     "hooks/claude-band.json": "70d8976ffb58a2f6a5941673d215ad58cbf43997a1b4f164ea58c14f19576510",
     "hooks/claude-codex-hooks.json": "72e6c54ff7d428d8c969f9929672902f145c042a88b35f848e17787a61936c82",
     "hooks/copilot-hooks.json": "ff995cd56aa09fc5a482f820250e160192f56dcd37b45372d2d178f4c10e6d1b",
@@ -99,7 +99,7 @@
     "hooks/ponytail-statusline.sh": "985d4ff0a16ddf2b41e8cad67ec19c1412f89d487aca6ed1debd1e897a8b03d7",
     "hooks/ponytail-subagent.js": "91ebe14b77a75025bad71436fa493484c3df5615dc8f0edda40a8cb212979b7c",
     "hooks/qoder-hooks.json": "8801429a19ba61b80ab26662195517111bbdb2a679fa50b65785cc28e4571f35",
-    "hooks/stack.js": "d1abab497426cb626038cbf2af0f1de98a8167aeb38a133e6f5d53dc8068745e",
+    "hooks/stack.js": "edf542a14519135c0f256f675023ba9039e91b0d2c08368a31c7538ab56c62e5",
     "hooks/band/board.ts": "9b0c21bcb49c1ee5910f8831cbfcb5d1aab0399bb60c4f6f1db69a55cb9a2e67",
     "hooks/band/logo.ts": "f9e45ded86563a67ce4c9e9ab7102b0d092c2214d50f72eb48b4ce2465cbadd0",
     "hooks/band/metrics.ts": "4a8b1f797dd43561cfb0997fe98c5e9deda352ecf195c1901962388263f5da08",
@@ -113,7 +113,8 @@
     "skills/setup-sonarqube/agents/openai.yaml": "5bcd78244a41a2f6e7e8c5509523a080fe990bdd4da55e2e88062b87a0387978",
     "skills/setup-sonarqube/scripts/check-container-runtime.py": "38d829199bb7c8af2a025f5c7c5c7f8a41e106737a3c2564c0144d77bce0178c",
     "skills/setup-sonarqube/scripts/read-analysis.py": "62e070233e4111975a45a2a3d9d11a8808dd776020ca541ad89eec76684496b7",
-    "skills/evaluate/SKILL.md": "cc738c8f3ca48f39030ac10e4f473254de06f7f50fa40578ba0538b32519eaaa",
-    "scripts/evaluation-config.py": "72aa5288735221789ba3bd8375da5e128d0e3214f03fb9d614430101a690a6df"
+    "skills/evaluate/SKILL.md": "6461410247e8aebe3299c7450865d74beb51f758a7916f7c3b5a78e9381e7412",
+    "scripts/evaluation-config.py": "635359b16f5deed830152bd7be556fc19b89a0698df6c73cc6103fcec107df9a",
+    "skills/onboarding/SKILL.md": "e5d8a8d2564a3ba4677e69952294941f00e276f84f106352893e4b3d0a1ca157"
   }
 }

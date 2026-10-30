@@ -11,7 +11,7 @@ import pytest
 ROOT = Path(__file__).parents[1]
 HELPER = ROOT / "scripts/evaluation-config.py"
 SKILL = ROOT / "skills/evaluate/SKILL.md"
-DEFAULTS = {"evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+DEFAULTS = {"plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
 
 
 @pytest.fixture
@@ -25,6 +25,7 @@ def config_module():
 def test_resolver_preserves_input_and_fills_independent_defaults(config_module):
     settings = {"evaluation": {"sonarqube": {"enabled": False}}}
     assert config_module.resolve_settings(settings, config_module.DEFAULTS) == {
+        "plan-mode": False,
         "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": False}},
     }
     assert settings == {"evaluation": {"sonarqube": {"enabled": False}}}
@@ -52,7 +53,7 @@ def test_main_reads_actual_project_and_emits_normalized_config(config_module, tm
     config_module.main()
     captured = capsys.readouterr()
     assert not captured.err
-    expected = {"evaluation": {"live": {"enabled": content is None}, "sonarqube": {"enabled": True}}}
+    expected = {"plan-mode": False, "evaluation": {"live": {"enabled": content is None}, "sonarqube": {"enabled": True}}}
     assert json.loads(captured.out) == expected
 
 
@@ -100,8 +101,33 @@ def test_switches_are_independent_real_booleans(tmp_path, live, sonarqube):
     original = path.read_bytes()
     result = run_config(tmp_path)
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == configuration
+    assert json.loads(result.stdout) == {"plan-mode": False, **configuration}
     assert path.read_bytes() == original, "Reading configuration must not rewrite project files"
+
+
+@pytest.mark.parametrize("plan_mode", [False, True])
+@pytest.mark.parametrize("live,sonarqube", [(False, True), (True, False), (False, False), (True, True)])
+def test_plan_mode_is_independent_of_evaluation_gates(tmp_path, plan_mode, live, sonarqube):
+    configuration = {
+        "plan-mode": plan_mode,
+        "evaluation": {"live": {"enabled": live}, "sonarqube": {"enabled": sonarqube}},
+    }
+    path = tmp_path / "kiss-chris-stack.config.json"
+    path.write_text(json.dumps(configuration), encoding="utf-8-sig")
+    original = path.read_bytes()
+    result = run_config(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == configuration
+    assert path.read_bytes() == original
+
+
+@pytest.mark.parametrize("plan_mode", [0, 1, "true", "false", None, {}, []])
+def test_plan_mode_rejects_non_boolean_values(tmp_path, plan_mode):
+    (tmp_path / "kiss-chris-stack.config.json").write_text(json.dumps({"plan-mode": plan_mode}), encoding="utf-8")
+    result = run_config(tmp_path)
+    assert result.returncode != 0
+    assert "boolean" in result.stderr.lower(), "Reject wrong types explicitly instead of coercing them"
+    assert not result.stdout.strip()
 
 
 @pytest.mark.parametrize("configuration", [
@@ -125,6 +151,7 @@ def test_invalid_configuration_fails_closed(tmp_path, configuration):
 @pytest.mark.parametrize("content", [
     "{broken", "", "{\"evaluation\": {\"live\": {\"enabled\": NaN}}}",
     '{"evaluation": {"live": {"enabled": true, "enabled": false}}}',
+    '{"plan-mode": true, "plan-mode": false}',
 ])
 def test_malformed_json_fails_closed(tmp_path, content):
     (tmp_path / "kiss-chris-stack.config.json").write_text(content, encoding="utf-8")
@@ -156,6 +183,25 @@ def test_canonical_policy_routes_goal_and_completion_through_evaluation_config()
     assert "evaluation" in text and "before" in text and "goal" in text
     assert "live" in text and "sonarqube" in text and "complete" in text
     assert "evaluate/skill.md" in text, "Keep detailed workflow in a single bundled skill"
+
+
+def test_plan_mode_policy_requires_approval_before_role_dispatch_and_reuses_goal():
+    text = (ROOT / "assets/global-stack-policy.md").read_text(encoding="utf-8").lower()
+    assert "plan-mode" in text
+    assert "false" in text and "true" in text
+    assert "strong" in text and "present" in text and "goal" in text
+    assert "explicit" in text and "user" in text and "approval" in text
+    assert "before" in text and ("dispatch" in text or "launch" in text)
+    assert "test" in text and "implementation" in text and "evaluation" in text
+    assert "same goal" in text, "Approval resumes the registered goal rather than creating another goal"
+    assert "wait" in text or "stop" in text
+
+
+def test_orchestrator_exposes_plan_mode_gate_before_implementation():
+    text = (ROOT / "skills/kiss-chris-stack/SKILL.md").read_text(encoding="utf-8").lower()
+    assert "plan-mode" in text
+    assert "false" in text and "true" in text
+    assert "approval" in text and "goal" in text and "before" in text
 
 
 def test_live_workflow_demands_real_application_and_frontend_proof():

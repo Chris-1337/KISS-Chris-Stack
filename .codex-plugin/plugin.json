@@ -10,7 +10,7 @@
   "hooks": "./hooks/hooks.json",
   "extensions": {
     "com.openai": {
-      "onboardingSkill": "./skills/setup/SKILL.md"
+      "onboardingSkill": "./skills/onboarding/SKILL.md"
     }
   },
   "interface": {

@@ -43,15 +43,21 @@ The repository provides the marketplace and plugin files used by these commands.
 
 Alternatively install from the repository marketplace in the Codex desktop Plugins Directory. No separate installer is required. This is a repository marketplace plugin with lifecycle hooks, not a public-directory submission.
 
-Prerequisites: a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for bundled searches/setup checks. Missing runtimes require local installation and possibly host reload. Run the packaged `/setup` during onboarding and review/trust the hook definition through the normal host UI. Never bypass review.
+After adding the plugin, [onboarding](skills/onboarding/SKILL.md) asks whether to set up a project. If yes, supply its existing absolute path before setup starts. If no, setup does not run: use the slash command `/setup` later, or let a trusted hook initialize the project on a later ordinary task. Installation never assumes its working directory is the project.
+
+Prerequisites: a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for bundled searches/setup checks. Missing runtimes require local installation and possibly host reload. Enable the plugin and review/trust the hook definition through the normal host UI. Never bypass review.
 
 ## What happens on a task
 
-Trusted SessionStart and UserPromptSubmit hooks inject setup/readiness before the original request. Setup checks current tools, bundled resources, global marker-owned policy (plus an existing override), the project CodeGraph index, MCP registration and actual session MCP tool visibility. Missing prerequisites are repaired locally; no cached ready flag substitutes for checks. The original request proceeds through the stack after readiness and context collection.
+Trusted SessionStart and UserPromptSubmit hooks inspect project-root `kiss-chris-stack.config.json` for ordinary tasks. Missing configuration means first-time setup; existing configuration means current readiness checks without repeated project initialization. Documentation contents do not determine setup status. Installation consent/path replies stay in onboarding before this routing, including a declined setup.
+
+Setup validates and preserves existing configuration, then checks current tools, bundled resources, global marker-owned policy (plus an existing override), the project CodeGraph index, MCP registration and actual session MCP tool visibility. Missing prerequisites are repaired locally; no config marker or cached ready flag substitutes for checks. Successful first-time setup creates the default configuration only after runtime/MCP readiness and documentation bootstrap; failed or reload-required setup does not create it. The original request proceeds through the stack after readiness and context collection.
+
+Project-root `kiss-chris-stack.config.json` also supports top-level `"plan-mode": false` by default. Set it to `true` to review the strong registered goal before implementation: the root presents it and ends its turn awaiting explicit approval before dispatching test, implementation or evaluation agents. Approval resumes the same goal; omitted/false keeps automatic execution. See [configuration](docs/EVALUATION.md).
 
 Sub-agents receive only their assigned role under the same goal. They do not start another setup, goal or recursive agent group. Upstream Ponytail lifecycle hooks run alongside stack hooks.
 
-`docs/` holds human architecture, business decisions and ADRs. `agent-traces/<component>/` holds brief records of implemented goals. Setup fills only evidence-backed gaps and preserves existing documents; empty projects receive only the structure.
+`docs/` holds human architecture, business decisions and ADRs. `agent-traces/<component>/` holds brief records of implemented goals. First-time setup and explicit `/setup` fill only evidence-backed gaps and preserve existing documents; empty projects receive only the structure. Automatic readiness checks in configured projects do not reinitialize missing documentation.
 
 The [shared language policy](assets/global-stack-policy.md#language) requires English documentation and internal reasoning; user-facing communication follows the language of the prompt. See [ADR 0003](docs/adr/0003-documentation-language.md).
 

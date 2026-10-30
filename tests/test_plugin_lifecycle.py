@@ -2,6 +2,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -124,6 +125,134 @@ def test_hook_rejects_invalid_events(isolated_plugin, payload):
     assert result.returncode != 0
     assert result.stderr.strip(), "Invalid events need actionable diagnostics"
     assert not result.stdout.strip(), "Invalid events must not emit a successful workflow context"
+
+
+def test_installation_onboarding_asks_before_setup_and_requires_a_project_path():
+    native = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
+    entry = (ROOT / native["extensions"]["com.openai"]["onboardingSkill"]).resolve()
+    assert entry != (ROOT / "skills/setup/SKILL.md").resolve(), "Installing a plugin must open a consent dialog, not setup"
+    text = entry.read_text(encoding="utf-8").lower()
+    for term in ("ask", "project", "yes", "no", "path", "existing", "wait", "/setup", "hook"):
+        assert term in text, f"Onboarding must cover {term}"
+    assert "do not" in text and ("declin" in text or "cancel" in text)
+    assert "cwd" in text, "Do not infer a target project from the installation working directory"
+    assert "before" in text and "lifecycle" in text, "Installation dialogue must precede automatic project setup/readiness"
+
+
+def _root_context(fixture, event="UserPromptSubmit"):
+    result = _hook(fixture, {"hook_event_name": event, "cwd": str(fixture[1]), "prompt": "Keep this request unchanged"})
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
+
+
+@pytest.mark.parametrize("plan_mode", [False, True])
+def test_root_hook_preserves_plan_mode_and_requires_goal_approval_when_enabled(isolated_plugin, plan_mode):
+    _, project, profile, _ = isolated_plugin
+    configuration = project / "kiss-chris-stack.config.json"
+    content = json.dumps({"plan-mode": plan_mode, "evaluation": {"live": {"enabled": False}}}).encode("utf-8")
+    configuration.write_bytes(content)
+    context = _root_context(isolated_plugin).lower()
+    assert "plan-mode" in context
+    assert "true" in context and "false" in context
+    assert "goal" in context and "approval" in context and "explicit" in context
+    assert "before" in context and ("stop" in context or "wait" in context)
+    assert "evaluation-config.py" in context, "Keep strict validation in the shared resolver"
+    assert configuration.read_bytes() == content
+    assert list(profile.iterdir()) == []
+
+
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+def test_root_hook_uses_project_config_as_initialization_marker(isolated_plugin, event):
+    _, project, profile, _ = isolated_plugin
+    uninitialized = _root_context(isolated_plugin, event)
+    assert "kiss-chris-stack.config.json" in uninitialized
+    assert "/setup" in uninitialized
+    assert re.search(r"(?:missing|absent|not (?:yet )?(?:initialized|configured))", uninitialized, re.I)
+
+    # Existing documentation and a nested config cannot mark this project ready.
+    for directory in ("docs", "agent-traces"):
+        (project / directory).mkdir()
+        (project / directory / "existing.md").write_text("Existing project knowledge", encoding="utf-8")
+    (project / "docs/kiss-chris-stack.config.json").write_text("{}", encoding="utf-8")
+    assert _root_context(isolated_plugin, event) == uninitialized
+
+    configuration = project / "kiss-chris-stack.config.json"
+    content = b'{"evaluation":{"live":{"enabled":false},"sonarqube":{"enabled":true}}}\n'
+    configuration.write_bytes(content)
+    initialized = _root_context(isolated_plugin, event)
+    assert initialized != uninitialized, "Config presence must select readiness checks instead of first-time setup"
+    assert "kiss-chris-stack.config.json" in initialized
+    assert "readiness" in initialized.lower() and "mcp" in initialized.lower()
+    assert re.search(r"(?:already (?:initialized|configured)|configured project|(?:project|setup|initialization) (?:is )?(?:initialized|complete))", initialized, re.I)
+    assert re.search(r"(?:do not|without|skip|no) [^.\n]*(?:initializ|bootstrap)", initialized, re.I), "Existing config must not reinitialize the project"
+    assert "Keep this request unchanged" in initialized
+    assert _root_context(isolated_plugin, event) == initialized, "Initialization never substitutes for current readiness checks"
+    assert configuration.read_bytes() == content
+    assert list(profile.iterdir()) == [], "Routing must not mutate the profile"
+
+
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+def test_root_hook_keeps_installation_onboarding_ahead_of_automatic_setup(isolated_plugin, event):
+    native = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
+    skill = Path(native["extensions"]["com.openai"]["onboardingSkill"]).parts[-2]
+    context = _root_context(isolated_plugin, event).lower()
+    assert skill != "setup"
+    assert "onboarding" in context and "consent" in context and "path" in context
+    assert re.search(r"(?:before|precedence|priority|first)", context)
+
+
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+def test_root_hook_rejects_directory_in_place_of_config(isolated_plugin, event):
+    _, project, _, _ = isolated_plugin
+    marker = project / "kiss-chris-stack.config.json"
+    marker.mkdir()
+    result = _hook(isolated_plugin, {"hook_event_name": event, "cwd": str(project)})
+    assert result.returncode != 0
+    assert not result.stdout.strip(), "A directory cannot authorize an initialized-project route"
+    assert "kiss-chris-stack.config.json" in result.stderr
+    assert marker.is_dir() and list(marker.iterdir()) == []
+
+
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+def test_root_hook_requires_strict_validation_without_replacing_malformed_config(isolated_plugin, event):
+    _, project, _, _ = isolated_plugin
+    marker = project / "kiss-chris-stack.config.json"
+    malformed = b'{"evaluation": "broken"'
+    marker.write_bytes(malformed)
+    context = _root_context(isolated_plugin, event).lower()
+    assert "evaluation-config.py" in context, "Use the strict shared resolver instead of trusting config presence"
+    assert re.search(r"(?:invalid|malformed|unreadable)[^.\n]*(?:block|stop|error)", context)
+    assert "before" in context and ("implementation" in context or "original request" in context)
+    assert marker.read_bytes() == malformed
+
+
+def test_delegated_hook_does_not_inspect_or_repair_project_marker(isolated_plugin):
+    _, project, profile, _ = isolated_plugin
+    marker = project / "kiss-chris-stack.config.json"
+    marker.mkdir()
+    result = _hook(isolated_plugin, {"hook_event_name": "SubagentStart", "cwd": str(project), "agent_type": "test-author"})
+    assert result.returncode == 0, result.stderr
+    context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert "test-author" in context and "Do not register another goal, run setup" in context
+    assert marker.is_dir() and list(marker.iterdir()) == []
+    assert list(profile.iterdir()) == []
+
+
+def test_setup_marks_initialization_only_after_success_and_preserves_config():
+    text = (ROOT / "skills/setup/SKILL.md").read_text(encoding="utf-8").lower()
+    assert "kiss-chris-stack.config.json" in text
+    assert "evaluation-config.py" in text, "Existing config needs the same strict resolver as evaluation"
+    assert "marker" in text or "indicator" in text
+    assert "create" in text and "only after" in text, "Never leave an initialized marker after failed setup or missing MCP"
+    assert "mcp" in text and "documentation" in text
+    assert re.search(r"(?:preserve|do not overwrite|never overwrite)[^.\n]*(?:config|settings|switch)", text)
+    assert re.search(r"(?:invalid|malformed|unreadable)[^.\n]*(?:block|stop|error)", text), "A broken config must not be overwritten or treated as absent"
+    policy = (ROOT / "assets/global-stack-policy.md").read_text(encoding="utf-8").lower()
+    orchestrator = (ROOT / "skills/kiss-chris-stack/SKILL.md").read_text(encoding="utf-8").lower()
+    for instructions in (policy, orchestrator):
+        assert "kiss-chris-stack.config.json" in instructions
+        assert "if either directory is missing" not in instructions
+        assert "if documentation is missing or empty, bootstrap" not in instructions
 
 
 def test_runtime_check_blocks_missing_runtime_without_mutation(isolated_plugin):
