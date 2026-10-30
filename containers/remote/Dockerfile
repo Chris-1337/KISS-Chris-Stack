@@ -2,7 +2,9 @@ FROM node:24-trixie-slim
 
 ARG CODEX_VERSION=0.166.0
 RUN apt-get update \
- && apt-get install -y --no-install-recommends openssh-server git python3 python3-venv python-is-python3 ca-certificates curl ripgrep \
+ && apt-get install -y --no-install-recommends \
+      openssh-server git python3 python3-venv python-is-python3 \
+      ca-certificates curl ripgrep \
  && rm -rf /var/lib/apt/lists/* \
  && rm -f /etc/ssh/ssh_host_* \
  && npm install -g "@openai/codex@${CODEX_VERSION}" \
@@ -33,6 +35,7 @@ COPY --chown=node:node containers/remote/codex-container.toml /home/node/.codex/
 USER node
 RUN codex plugin marketplace add /opt/kiss-chris-stack \
  && codex plugin add kiss-chris-stack@kiss-chris-stack
+# sshd needs root for protected host keys and UID switching; sessions use node.
 USER root
 
 COPY containers/remote/sshd_config /etc/ssh/sshd_config

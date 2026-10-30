@@ -1,4 +1,5 @@
 """Prepare an isolated SSH target without using Docker or host credentials."""
+
 import base64
 import importlib.util
 import runpy
@@ -10,21 +11,27 @@ from pathlib import Path
 
 import pytest
 
-
 HELPER = Path(__file__).parents[1] / "containers/remote/prepare.py"
 REAL_RUN = subprocess.run
 
 
 def public_key():
     algorithm = b"ssh-ed25519"
-    blob = struct.pack(">I", len(algorithm)) + algorithm + struct.pack(">I", 32) + b"k" * 32
+    blob = (
+        struct.pack(">I", len(algorithm))
+        + algorithm
+        + struct.pack(">I", 32)
+        + b"k" * 32
+    )
     return "ssh-ed25519 " + base64.b64encode(blob).decode() + " container-host"
 
 
 @pytest.fixture
 def helper():
     assert HELPER.is_file(), "The isolated target needs its bootstrap helper"
-    spec = importlib.util.spec_from_file_location("remote_environment_under_test", HELPER)
+    spec = importlib.util.spec_from_file_location(
+        "remote_environment_under_test", HELPER
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -35,7 +42,9 @@ def target(tmp_path, monkeypatch):
     monkeypatch.delenv("KISS_SSH_PORT", raising=False)
     home = tmp_path / "host-home"
     (home / ".ssh").mkdir(parents=True)
-    (home / ".ssh/config").write_text("Host personal\n  HostName example.invalid\n")
+    (home / ".ssh/config").write_text(
+        "Host personal\n  HostName example.invalid\n"
+    )
     (home / ".ssh/id_ed25519").write_text("host private credential")
     (home / ".git-credentials").write_text("host git credential")
     monkeypatch.setenv("HOME", str(home))
@@ -51,23 +60,42 @@ def mock_commands(monkeypatch, root, host_key=None, docker_failure=False):
     def run(argv, **kwargs):
         argv = list(map(str, argv))
         calls.append(argv)
-        assert not kwargs.get("shell"), "Paths and commands must use argv, never a shell"
+        assert not kwargs.get(
+            "shell"
+        ), "Paths and commands must use argv, never a shell"
         if argv[0] == "ssh-keygen":
             key = Path(argv[argv.index("-f") + 1])
             assert key.parent == root / ".runtime"
             if "-y" in argv:
-                assert key.is_file(), "Public-key recovery must read the existing private key"
-                return subprocess.CompletedProcess(argv, 0, public_key() + "\n", "")
+                assert (
+                    key.is_file()
+                ), "Public-key recovery must read the existing private key"
+                return subprocess.CompletedProcess(
+                    argv, 0, public_key() + "\n", ""
+                )
             key.write_text("new dedicated private key")
             key.with_suffix(key.suffix + ".pub").write_text(public_key() + "\n")
             return subprocess.CompletedProcess(argv, 0, "", "")
         compose = ["docker", "compose", "-f", str(root / "compose.yaml")]
         if argv == compose + ["up", "-d", "--build"]:
             if docker_failure:
-                raise subprocess.CalledProcessError(17, argv, stderr="Docker is unavailable")
+                raise subprocess.CalledProcessError(
+                    17, argv, stderr="Docker is unavailable"
+                )
             return subprocess.CompletedProcess(argv, 0, "", "")
-        if argv == compose + ["exec", "-T", "agent", "cat", "/var/lib/kiss-ssh/ssh_host_ed25519_key.pub"]:
-            return subprocess.CompletedProcess(argv, 0, (public_key() if host_key is None else host_key) + "\n", "")
+        if argv == compose + [
+            "exec",
+            "-T",
+            "agent",
+            "cat",
+            "/var/lib/kiss-ssh/ssh_host_ed25519_key.pub",
+        ]:
+            return subprocess.CompletedProcess(
+                argv,
+                0,
+                (public_key() if host_key is None else host_key) + "\n",
+                "",
+            )
         pytest.fail(f"Unexpected external command: {argv}")
 
     monkeypatch.setattr(subprocess, "run", run)
@@ -75,10 +103,16 @@ def mock_commands(monkeypatch, root, host_key=None, docker_failure=False):
 
 
 def snapshot(root):
-    return {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+    return {
+        path.relative_to(root): path.read_bytes()
+        for path in root.rglob("*")
+        if path.is_file()
+    }
 
 
-def test_fresh_preparation_creates_dedicated_key_and_pinned_target(helper, target, monkeypatch):
+def test_fresh_preparation_creates_dedicated_key_and_pinned_target(
+    helper, target, monkeypatch
+):
     root, home = target
     original_credentials = snapshot(home)
     calls = mock_commands(monkeypatch, root)
@@ -88,24 +122,52 @@ def test_fresh_preparation_creates_dedicated_key_and_pinned_target(helper, targe
     runtime = root / ".runtime"
     assert (runtime / "id_ed25519").read_text() == "new dedicated private key"
     assert (runtime / "id_ed25519.pub").is_file()
-    assert (runtime / "known_hosts").read_text() == "[127.0.0.1]:2222 " + " ".join(public_key().split()[:2]) + "\n"
+    assert (
+        runtime / "known_hosts"
+    ).read_text() == "[127.0.0.1]:2222 " + " ".join(
+        public_key().split()[:2]
+    ) + "\n"
     assert (runtime / "ssh_config").is_file()
     assert (runtime.stat().st_mode & 0o077) == 0
     assert ((runtime / "id_ed25519").stat().st_mode & 0o077) == 0
     assert snapshot(home) == original_credentials
-    assert all(b"host private credential" not in data and b"host git credential" not in data for data in snapshot(root).values())
+    assert all(
+        b"host private credential" not in data
+        and b"host git credential" not in data
+        for data in snapshot(root).values()
+    )
     assert sum(argv[0] == "ssh-keygen" for argv in calls) == 1
-    assert calls.index(["docker", "compose", "-f", str(root / "compose.yaml"), "up", "-d", "--build"]) < len(calls) - 1
+    assert (
+        calls.index(
+            [
+                "docker",
+                "compose",
+                "-f",
+                str(root / "compose.yaml"),
+                "up",
+                "-d",
+                "--build",
+            ]
+        )
+        < len(calls) - 1
+    )
 
 
-def test_ssh_config_is_usable_with_space_and_quote_paths(helper, target, monkeypatch):
+def test_ssh_config_is_usable_with_space_and_quote_paths(
+    helper, target, monkeypatch
+):
     root, _ = target
     mock_commands(monkeypatch, root)
     helper.prepare(root)
     ssh = shutil.which("ssh")
     assert ssh, "OpenSSH is required to validate the generated SSH config"
 
-    result = REAL_RUN([ssh, "-G", "-F", str(root / ".runtime/ssh_config"), "kiss-container"], check=True, capture_output=True, text=True)
+    result = REAL_RUN(
+        [ssh, "-G", "-F", str(root / ".runtime/ssh_config"), "kiss-container"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     settings = dict(line.split(" ", 1) for line in result.stdout.splitlines())
 
     assert settings["hostname"] == "127.0.0.1"
@@ -115,11 +177,15 @@ def test_ssh_config_is_usable_with_space_and_quote_paths(helper, target, monkeyp
     assert settings["identitiesonly"] == "yes"
     assert settings["stricthostkeychecking"] == "true"
     assert settings["identityfile"] == str(root / ".runtime/id_ed25519")
-    assert settings["userknownhostsfile"].strip('"') == str(root / ".runtime/known_hosts")
+    assert settings["userknownhostsfile"].strip('"') == str(
+        root / ".runtime/known_hosts"
+    )
 
 
 @pytest.mark.parametrize("public_key_exists", [True, False])
-def test_repeated_preparation_preserves_existing_private_key(helper, target, monkeypatch, public_key_exists):
+def test_repeated_preparation_preserves_existing_private_key(
+    helper, target, monkeypatch, public_key_exists
+):
     root, _ = target
     runtime = root / ".runtime"
     runtime.mkdir(mode=0o700)
@@ -140,8 +206,18 @@ def test_repeated_preparation_preserves_existing_private_key(helper, target, mon
     assert all("-y" in argv for argv in calls if argv[0] == "ssh-keygen")
 
 
-@pytest.mark.parametrize("host_key", ["not a public key", "ssh-ed25519 !!!", "ssh-rsa AAAA", public_key() + "\nssh-ed25519 AAAA"])
-def test_malformed_host_key_cannot_publish_ssh_target(helper, target, monkeypatch, host_key):
+@pytest.mark.parametrize(
+    "host_key",
+    [
+        "not a public key",
+        "ssh-ed25519 !!!",
+        "ssh-rsa AAAA",
+        public_key() + "\nssh-ed25519 AAAA",
+    ],
+)
+def test_malformed_host_key_cannot_publish_ssh_target(
+    helper, target, monkeypatch, host_key
+):
     root, _ = target
     mock_commands(monkeypatch, root, host_key=host_key)
 
@@ -152,7 +228,9 @@ def test_malformed_host_key_cannot_publish_ssh_target(helper, target, monkeypatc
     assert not (root / ".runtime/ssh_config").exists()
 
 
-def test_docker_start_failure_propagates_without_publishing_ssh_target(helper, target, monkeypatch):
+def test_docker_start_failure_propagates_without_publishing_ssh_target(
+    helper, target, monkeypatch
+):
     root, _ = target
     calls = mock_commands(monkeypatch, root, docker_failure=True)
 
@@ -165,22 +243,35 @@ def test_docker_start_failure_propagates_without_publishing_ssh_target(helper, t
     assert not (root / ".runtime/ssh_config").exists()
 
 
-def test_explicit_port_is_pinned_in_generated_ssh_target(helper, target, monkeypatch):
+def test_explicit_port_is_pinned_in_generated_ssh_target(
+    helper, target, monkeypatch
+):
     root, _ = target
     monkeypatch.setenv("KISS_SSH_PORT", "2223")
     mock_commands(monkeypatch, root)
 
     helper.prepare(root)
 
-    assert (root / ".runtime/known_hosts").read_text().startswith("[127.0.0.1]:2223 ")
+    assert (
+        (root / ".runtime/known_hosts")
+        .read_text()
+        .startswith("[127.0.0.1]:2223 ")
+    )
     ssh = shutil.which("ssh")
     assert ssh, "OpenSSH is required to validate the generated SSH config"
-    result = REAL_RUN([ssh, "-G", "-F", str(root / ".runtime/ssh_config"), "kiss-container"], check=True, capture_output=True, text=True)
+    result = REAL_RUN(
+        [ssh, "-G", "-F", str(root / ".runtime/ssh_config"), "kiss-container"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     assert "port 2223\n" in result.stdout
 
 
 @pytest.mark.parametrize("port", ["", "0", "65536", "abc", "22.5"])
-def test_invalid_port_fails_before_side_effects(helper, target, monkeypatch, port):
+def test_invalid_port_fails_before_side_effects(
+    helper, target, monkeypatch, port
+):
     root, _ = target
     monkeypatch.setenv("KISS_SSH_PORT", port)
     calls = mock_commands(monkeypatch, root)
@@ -192,7 +283,9 @@ def test_invalid_port_fails_before_side_effects(helper, target, monkeypatch, por
     assert not (root / ".runtime").exists()
 
 
-def test_cli_defaults_to_script_directory(helper, target, tmp_path, monkeypatch):
+def test_cli_defaults_to_script_directory(
+    helper, target, tmp_path, monkeypatch
+):
     root, _ = target
     script = root / "prepare.py"
     shutil.copyfile(HELPER, script)
@@ -204,3 +297,92 @@ def test_cli_defaults_to_script_directory(helper, target, tmp_path, monkeypatch)
 
     assert (root / ".runtime/ssh_config").is_file()
     assert not (tmp_path / ".runtime").exists()
+
+
+@pytest.mark.parametrize(
+    "name", ["unsafe$path", "unsafe\npath", "unsafe\rpath"]
+)
+def test_unsafe_ssh_paths_fail_before_creating_credentials(
+    helper, tmp_path, monkeypatch, name
+):
+    root = tmp_path / name
+    calls = mock_commands(monkeypatch, root)
+
+    with pytest.raises(ValueError, match="SSH config paths"):
+        helper.prepare(root)
+
+    assert calls == []
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("blob", [b"short", b"x" * 51])
+def test_encoded_but_invalid_host_key_cannot_be_pinned(
+    helper, target, monkeypatch, blob
+):
+    root, _ = target
+    mock_commands(
+        monkeypatch,
+        root,
+        host_key="ssh-ed25519 " + base64.b64encode(blob).decode(),
+    )
+
+    with pytest.raises(ValueError, match="invalid Ed25519"):
+        helper.prepare(root)
+
+    assert not (root / ".runtime/known_hosts").exists()
+    assert not (root / ".runtime/ssh_config").exists()
+
+
+def test_host_key_startup_race_recovers_without_replacing_identity(
+    helper, target, monkeypatch
+):
+    root, _ = target
+    mock_commands(monkeypatch, root)
+    original_run = subprocess.run
+    attempts, sleeps = [], []
+
+    def run(argv, **kwargs):
+        if "exec" in argv:
+            attempts.append(argv)
+            if len(attempts) == 1:
+                raise subprocess.TimeoutExpired(argv, timeout=5)
+        return original_run(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(helper.time, "sleep", sleeps.append)
+    helper.prepare(root)
+
+    assert len(attempts) == 2
+    assert sleeps == [1]
+    assert (
+        root / ".runtime/id_ed25519"
+    ).read_text() == "new dedicated private key"
+    assert (root / ".runtime/ssh_config").is_file()
+
+
+@pytest.mark.parametrize("timeout", [False, True])
+def test_unavailable_host_key_has_a_bounded_failure(
+    helper, target, monkeypatch, timeout
+):
+    root, _ = target
+    mock_commands(monkeypatch, root)
+    original_run = subprocess.run
+    attempts, sleeps = [], []
+
+    def run(argv, **kwargs):
+        if "exec" in argv:
+            attempts.append(argv)
+            if timeout:
+                raise subprocess.TimeoutExpired(argv, timeout=5)
+            raise subprocess.CalledProcessError(1, argv)
+        return original_run(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(helper.time, "sleep", sleeps.append)
+    with pytest.raises(RuntimeError, match="unavailable after 10 attempts"):
+        helper.prepare(root)
+
+    assert len(attempts) == 10
+    assert len(sleeps) == 9
+    assert not (root / ".runtime/known_hosts").exists()
+    assert not (root / ".runtime/ssh_config").exists()
