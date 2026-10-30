@@ -87,14 +87,4 @@ docker compose -f containers/remote/compose.yaml stop
 
 Restart using the same preparation command. Do not use `down -v` or volume pruning as a routine restart: the volumes contain projects, authentication and host identity.
 
-### Move an existing checkout
-
-Host paths are resolved from the checkout location, not a developer-specific home directory. The generated SSH fragment contains absolute paths, and Docker records the public-key bind source as an absolute path too. To relocate an existing environment:
-
-1. Stop the service using the command above, then move the complete checkout, including `containers/remote/.runtime`, to its new location outside host skill directories. Preserve the private key's permissions.
-2. From the new repository root, rerun `python3 containers/remote/prepare.py`. Keep the same `KISS_SSH_PORT` and, if previously customized, `COMPOSE_PROJECT_NAME`. Compose updates the public-key bind mount while reusing the existing named volumes; the helper preserves the client key and regenerates the SSH fragment.
-3. Replace the existing `Host kiss-container` block in your SSH config with the regenerated block. Do not append a duplicate. Verify with `ssh -F containers/remote/.runtime/ssh_config kiss-container 'codex --version'`, then reconnect the desktop connection.
-
-Do not move only `containers/remote`: the image build needs the repository's plugin resources through its relative build context.
-
 The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Windows and fresh interactive desktop onboarding are not claimed as verified by the automated checks.
