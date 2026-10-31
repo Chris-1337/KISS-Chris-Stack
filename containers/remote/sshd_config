@@ -1,0 +1,22 @@
+Port 2222
+ListenAddress 0.0.0.0
+HostKey /var/lib/kiss-ssh/ssh_host_ed25519_key
+PidFile /run/sshd.pid
+AuthorizedKeysFile /etc/ssh/kiss_authorized_keys
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+PermitRootLogin no
+AllowUsers node
+UsePAM no
+AllowAgentForwarding no
+AllowTcpForwarding no
+X11Forwarding no
+PermitTunnel no
+PermitUserEnvironment no
+# SSH sessions do not inherit the Docker environment, including tool locations.
+SetEnv NPM_CONFIG_PREFIX=/home/node/.local PATH=/home/node/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PrintMotd no
+Subsystem sftp internal-sftp

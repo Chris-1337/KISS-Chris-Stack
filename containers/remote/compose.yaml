@@ -1,0 +1,51 @@
+name: kiss-chris-remote
+
+services:
+  agent:
+    image: kiss-chris-stack:codex-0.166.0
+    build:
+      context: ../..
+      dockerfile: containers/remote/Dockerfile
+      args:
+        CODEX_VERSION: 0.166.0
+    hostname: kiss-chris-remote
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${KISS_SSH_PORT:-2222}:2222"
+    volumes:
+      # Docker seeds a new home from the image; an existing volume is preserved.
+      - home:/home/node
+      - work:/work
+      - hostkeys:/var/lib/kiss-ssh
+      - type: bind
+        source: ./.runtime/id_ed25519.pub
+        target: /run/kiss-authorized-key
+        read_only: true
+        bind:
+          create_host_path: false
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+      - SYS_CHROOT
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 4g
+    cpus: 2
+    pids_limit: 1024
+    shm_size: 512m
+    healthcheck:
+      test: ["CMD", "/usr/sbin/sshd", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  home:
+  work:
+  hostkeys:

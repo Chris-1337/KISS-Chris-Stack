@@ -1,0 +1,4 @@
+# Container only: Docker is the execution boundary; do not apply on the host.
+approval_policy = "on-request"
+sandbox_mode = "danger-full-access"
+cli_auth_credentials_store = "file"
