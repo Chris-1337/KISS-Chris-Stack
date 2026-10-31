@@ -43,6 +43,18 @@ KISS_SSH_PORT=2223 python3 containers/remote/prepare.py
 
 The generated SSH fragment and pinned key entry use the selected port.
 
+## Sign in inside the container
+
+Before starting a remote chat, sign in with device authentication. This profile does not forward the remote OAuth callback on port 1455: a browser redirect to `127.0.0.1:1455` on the host cannot reach the container's callback listener. Device authentication is the supported path for this headless environment:
+
+```sh
+docker compose -f containers/remote/compose.yaml exec --user node agent codex login --device-auth
+```
+
+Open the official verification URL printed by Codex, enter its one-time code and confirm the login in your browser. Keep the command running until it reports success. Then reconnect the desktop host if its account view is stale. Device authentication must be permitted by the account/workspace.
+
+Do not paste callback URLs or tokens into chats, and do not copy your host `auth.json` into the image or repository. Credentials created by this login stay in the container's home volume. See [headless authentication](https://learn.chatgpt.com/docs/auth#login-on-headless-devices).
+
 ## Connect the desktop app
 
 1. Review `containers/remote/.runtime/ssh_config` and copy its `Host kiss-container` block into your user SSH config, normally `~/.ssh/config`. Preserve existing entries; if that alias already exists, reconcile it rather than appending a second conflicting entry. The fragment uses this checkout's key and pinned host-key file.
@@ -58,18 +70,6 @@ The generated SSH fragment and pinned key entry use the selected port.
 `/work` is at the root of the container's Linux filesystem. It is not a folder in your Mac Finder or Windows Explorer. Choosing the SSH connection and choosing its project folder are separate steps; enabling the connection alone does not start a project chat. The desktop renders the chat while commands and file operations run inside the container.
 
 See the official [desktop SSH connection guide](https://learn.chatgpt.com/docs/remote-connections).
-
-## Sign in inside the container
-
-Use the desktop's supported sign-in flow for the remote environment. If browser login fails at `127.0.0.1:1455`, use device authentication:
-
-```sh
-docker compose -f containers/remote/compose.yaml exec --user node agent codex login --device-auth
-```
-
-Open the official verification URL printed by Codex, enter its one-time code and confirm the login in your browser. Keep the command running until it reports success. Then reconnect the desktop host if its account view is stale. Device authentication must be permitted by the account/workspace.
-
-Do not paste callback URLs or tokens into chats, and do not copy your host `auth.json` into the image or repository. Credentials created by this login stay in the container's home volume. See [headless authentication](https://learn.chatgpt.com/docs/auth#login-on-headless-devices).
 
 ## Verify the desktop setup
 
