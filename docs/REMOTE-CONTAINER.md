@@ -65,7 +65,7 @@ Do not paste callback URLs or tokens into chats, and do not copy your host `auth
    ```
 
 3. In the desktop app, open **Settings > Connections**, add/enable `kiss-container`, then choose the remote project folder `/work`.
-4. Start a chat in that remote project. Enable the plugin and review/trust its hooks through the normal supported UI. Complete onboarding with the existing project path `/work`, or run `/setup` there explicitly.
+4. Start a chat in that remote project. Enable the plugin and review/trust its hooks through the normal supported UI. Run `/setup` and explicitly provide `/work` when asked for the existing project path; selecting the desktop project alone does not supply that onboarding consent.
 
 `/work` is at the root of the container's Linux filesystem. It is not a folder in your Mac Finder or Windows Explorer. Choosing the SSH connection and choosing its project folder are separate steps; enabling the connection alone does not start a project chat. The desktop renders the chat while commands and file operations run inside the container.
 
@@ -73,7 +73,7 @@ See the official [desktop SSH connection guide](https://learn.chatgpt.com/docs/r
 
 ## Verify the desktop setup
 
-After signing in and approving the plugin hooks, run `/setup` for `/work`. Allow the normal host reload if setup reports that CodeGraph MCP needs it, then repeat the readiness check.
+After signing in and approving the plugin hooks, run `/setup` for `/work`. If setup reports `reload-required`, reconnect this SSH host in Settings > Connections, reopen the chat, and ask it to finish setup for `/work` using a real CodeGraph MCP call. Successful setup creates `/work/kiss-chris-stack.config.json` only after the checks pass.
 
 In the remote chat, ask the agent to report `whoami` and `pwd`, create/read/delete a temporary file under `/work`, and call the actual CodeGraph MCP status tool for `/work`. Expect user `node`, project `/work`, successful file operations and a successful MCP tool call. CLI registration alone does not complete this check. Stop and prepare the environment again to check that your project and sign-in persist.
 
@@ -97,4 +97,4 @@ Restart using the same preparation command. Do not use `down -v` or volume pruni
 
 Validation covers ARM64 containers and Linux/AMD64 containers emulated on Apple Silicon. On an x86-64 Docker engine, use the same preparation command; no platform override is required.
 
-The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Native x86 hardware, Windows hosts and fresh interactive desktop onboarding are not claimed as verified by the automated checks.
+The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Device sign-in and graphical hook approval were completed by a human tester, followed by verified setup completion and a real CodeGraph MCP call in the remote desktop chat. Native x86 hardware and Windows hosts remain untested; the GUI actions were not automated.
