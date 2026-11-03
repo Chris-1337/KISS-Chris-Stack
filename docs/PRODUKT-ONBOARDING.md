@@ -52,6 +52,8 @@ The [shared policy](../assets/global-stack-policy.md) remains authoritative. Ins
 
 ## Features
 
+- Module documentation during first-time or explicit setup: one fresh-context GPT-6 Luna (`gpt-6-luna`, reasoning `low`) researcher per real module collects only module-local evidence; the root then organizes the retained notes into linked architecture and usage documents under `docs/<module>/`, preserving existing layouts. Unavailable agents/model settings or incomplete research prevent bootstrap success; see [the module workflow](../skills/setup/SKILL.md#module-research-and-synthesis).
+- Final setup instruction review: after documentation, native `/init` prepares project `AGENTS.md` and the root refines concise, evidence-backed guidance while preserving unique valid rules and instruction scopes. An existing file is reused if native initialization refuses it; unavailable native dispatch leaves setup pending for a manual run and review. See [the final instruction phase](../skills/setup/SKILL.md#native-initialization-and-project-instructions).
 - All stack skills, including the Ponytail suite and UIUX search resources, in the plugin.
 - Native Codex marketplace installation with consent-first onboarding and an explicit project path.
 - Three stack handlers and three original Ponytail lifecycle handlers.

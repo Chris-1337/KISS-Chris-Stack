@@ -11,7 +11,7 @@ try {
   const root = path.resolve(__dirname, '..');
   let context;
   if (name === 'SubagentStart') {
-    context = `KISS-Chris-Stack delegated role: ${JSON.stringify(event.agent_type || 'assigned role')}. Work only on the orchestrator's existing goal and assigned role. Read the supplied specification and relevant project context. Keep tests, implementation and independent evaluation in separate agents. Do not register another goal, run setup, or spawn recursive role groups. Report executable evidence and blockers to the orchestrator.`;
+    context = `KISS-Chris-Stack delegated role: ${JSON.stringify(event.agent_type || 'assigned role')}. Work only on the orchestrator's existing goal and assigned role, or on explicitly assigned setup module research during bootstrap without an implementation goal. For setup research, read only the supplied module paths and write only the assigned notes. Read the supplied specification and relevant project context within your assigned scope. Keep tests, implementation and independent evaluation in separate agents. Do not register another goal, run setup, or spawn recursive role groups. Report executable evidence and blockers to the orchestrator.`;
   } else {
     const config = path.join(path.resolve(event.cwd), 'kiss-chris-stack.config.json');
     let initialized = false;
