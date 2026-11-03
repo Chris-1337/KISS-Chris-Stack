@@ -1,11 +1,11 @@
 ---
 name: grilling
-description: Resolve the user's decisions through prerequisite-aware interview rounds, always before a new KISS-Chris-Stack goal, then continue automatically without a closing confirmation.
+description: Resolve the user's decisions through prerequisite-aware interview rounds before a new KISS-Chris-Stack goal when grill-me is enabled (default true), or on explicit request, then continue automatically without a closing confirmation.
 ---
 
 # Grilling before the goal
 
-The root always runs grilling after reviewing project context and relevant feedback, before formulating and registering each new goal. Resume the same interview across answers; do not restart it on every reply. Onboarding and setup retain their own routing, and delegated test, implementation and evaluation agents work under the existing goal without another interview.
+The root resolves top-level `grill-me` through bundled `scripts/evaluation-config.py` after reviewing project context and relevant feedback, before formulating and registering each new goal. This strict JSON boolean defaults to `true`: when true, run Grilling; when false, skip automatic Grilling and continue to goal formulation/registration. An explicit user request to invoke this skill still runs it, including with `grill-me=false`. The switch preserves readiness, context/feedback review, configured `plan-mode` approval, evaluation gates and permission boundaries. Resume the same interview across answers; do not restart it on every reply. Onboarding and setup retain their own routing, and delegated test, implementation and evaluation agents work under the existing goal without another interview.
 
 Map the requested outcome as a decision tree: each decision unlocks decisions that depend on it. Use the request, documentation, code and prior answers to mark already settled decisions. Review every branch relevant to the requested scope; do not expand the task or invent questions when the request is already clear.
 
@@ -19,4 +19,4 @@ When all decisions relevant to the requested scope are settled, continue automat
 
 This automatic continuation preserves the separate configured `plan-mode=true` approval of the registered goal and all permission boundaries in the [shared policy](../../assets/global-stack-policy.md). It does not authorize implementation while a decision, configured goal approval or required permission remains unresolved.
 
-Adapted from Matt Pocock's [Grilling skill](https://github.com/mattpocock/skills/blob/7739eaed7f8f3915437a8def198a6d0d7206dbc7/skills/productivity/grilling/SKILL.md), commit `7739eaed7f8f3915437a8def198a6d0d7206dbc7`, under [MIT](../../licenses/grilling-LICENSE). Stack adaptations: mandatory pre-goal use, bounded task scope, reusable fact research, continuation across replies, and automatic completion without the upstream closing confirmation.
+Adapted from Matt Pocock's [Grilling skill](https://github.com/mattpocock/skills/blob/7739eaed7f8f3915437a8def198a6d0d7206dbc7/skills/productivity/grilling/SKILL.md), commit `7739eaed7f8f3915437a8def198a6d0d7206dbc7`, under [MIT](../../licenses/grilling-LICENSE). Stack adaptations: configurable pre-goal use enabled by default, bounded task scope, reusable fact research, continuation across replies, and automatic completion without the upstream closing confirmation.

@@ -1,9 +1,10 @@
 # Workflow and evaluation configuration
 
-The separate evaluation agent follows [evaluate](../skills/evaluate/SKILL.md). The root resolves project configuration before defining acceptance criteria, and evaluation re-reads it before goal completion. The project-local [kiss-chris-stack.config.json](../kiss-chris-stack.config.json) controls goal approval and two independent evaluation gates:
+The separate evaluation agent follows [evaluate](../skills/evaluate/SKILL.md). The root resolves project configuration before defining acceptance criteria, and evaluation re-reads it before goal completion. The project-local [kiss-chris-stack.config.json](../kiss-chris-stack.config.json) controls automatic Grilling, goal approval and two independent evaluation gates:
 
 ```json
 {
+  "grill-me": true,
   "plan-mode": false,
   "evaluation": {
     "live": { "enabled": true },
@@ -18,6 +19,7 @@ The JSON root is an object. `evaluation` is an object grouping the two independe
 
 | Setting | Default | `true` | `false` |
 | --- | --- | --- | --- |
+| `grill-me` | `true` | Run Grilling after context/feedback review and before each new goal; continue automatically once decisions are settled. | Skip automatic Grilling and continue to goal formulation/registration; explicit invocation remains available. |
 | `plan-mode` | `false` | Present the registered goal, request explicit approval and yield before dispatching test, implementation or evaluation roles. | Continue automatically after goal registration. |
 | `evaluation.live.enabled` | `true` | Require applicable functional proof against the actual project; use document/contract checks for documentation-only work. | Skip the live evaluation gate; keep ordinary goal tests. |
 | `evaluation.sonarqube.enabled` | `true` | Require fresh current-source, analysis-specific green quality gates for every relevant configured SonarQube project. | Skip scanner, readback and token operations; preserve service configuration, credentials and data. |
@@ -36,11 +38,13 @@ For example, to review each goal before implementation while retaining live proo
 }
 ```
 
-This is an optional example, not this repository's active configuration. Approval and gate switches are independent; disabling a gate does not disable tests, readiness checks or feedback review. Agents must not change a value merely to bypass a failing check.
+This is an optional example, not this repository's active configuration. Grilling, approval and gate switches are independent; disabling a gate does not disable tests, readiness checks or feedback review. Agents must not change a value merely to bypass a failing check.
 
 ## Approval, initialization and updates
 
-Top-level `plan-mode` defaults to `false`, preserving automatic execution after goal registration, including for existing files without this key. Set it to `true` to have the root present the strong registered goal, request explicit user approval and end its turn before dispatching test, implementation or evaluation agents. Approval resumes the same goal; a changed goal requires renewed approval. Rejection, silence, elapsed time and pending replies do not authorize implementation. Setup, context collection and mandatory [Grilling](../skills/grilling/SKILL.md) happen before goal registration and this gate. Grilling continues automatically when the necessary decisions are settled, without a closing confirmation; unanswered decisions still require answers. There is no Grilling configuration switch, and its automatic completion never replaces the separate `plan-mode=true` goal approval. This is an agent workflow rule, not a switch for the host's collaboration mode; live and SonarQube evaluation remain independent.
+Top-level `grill-me` is a strict JSON boolean defaulting to `true`, including when the file or key is absent. After setup and context/feedback review, true runs [Grilling](../skills/grilling/SKILL.md) before every new goal. Grilling continues automatically when the necessary decisions are settled, without a closing confirmation; unanswered decisions still require answers. Set `"grill-me": false` to skip automatic Grilling and continue to goal formulation/registration. An explicit request to invoke Grilling still runs it. This switch preserves readiness, context/feedback review, goal approval, tests, evaluation gates and permission boundaries; it does not authorize work with missing requirements.
+
+Top-level `plan-mode` defaults to `false`, preserving automatic execution after goal registration, including for existing files without this key. Set it to `true` to have the root present the strong registered goal, request explicit user approval and end its turn before dispatching test, implementation or evaluation agents. Approval resumes the same goal; a changed goal requires renewed approval. Rejection, silence, elapsed time and pending replies do not authorize implementation. Grilling's automatic completion or its disabled switch never replaces this separate `plan-mode=true` goal approval. These are agent workflow rules, not switches for the host's collaboration mode; live and SonarQube evaluation remain independent.
 
 This root file is also the project's initialization indicator. First-time [setup](../skills/setup/SKILL.md) creates it with these defaults only after successful runtime readiness, a real session MCP call and documentation bootstrap. Existing configuration is strictly validated and updated only by adding missing current defaults; explicit values are preserved. Ordinary hooks use its absence to select initialization and its presence to supply an updater argv for the root before current readiness checks without reinitialization; documentation folders are not setup markers. Explicit `/setup` can still fill documentation gaps. A failed/reload-required initial setup leaves the file absent. Installation [onboarding](../skills/onboarding/SKILL.md) asks for consent and then an explicit existing project path before setup begins.
 
@@ -62,7 +66,7 @@ python "<plugin-root>/scripts/evaluation-config.py" --project "<project-root>" -
 
 This explicit updater compares the valid existing configuration with the current bundled defaults and adds only missing fields, including nested ones. It preserves all explicit boolean values, removes or renames no fields, and creates no absent configuration. A complete file is a byte/mtime-preserving no-op. Invalid configuration, unsafe nonregular/symlink targets, Windows read-only files needing changes, permission failures and detected concurrent edits block updates without replacing the original. Changed configuration uses a same-directory staging file with copied permissions (including Windows ACL before content is written), then atomic replacement and cleanup of its own staging file. A final noncooperating-writer race between the last check and replacement remains; shared locking is outside this workflow's scope.
 
-The bare hook itself remains read-only. It cannot determine installation consent from arbitrary prompt text, so only the root executes the supplied argv after selecting the ordinary-task route. Pending or declined installation onboarding never executes it; delegated roles and evaluation continue using read-only resolution. Default backfill is not project reinitialization and cannot override a user's disabled evaluation gate or approval setting.
+The bare hook itself remains read-only. It cannot determine installation consent from arbitrary prompt text, so only the root executes the supplied argv after selecting the ordinary-task route. Pending or declined installation onboarding never executes it; delegated roles and evaluation continue using read-only resolution. Default backfill is not project reinitialization and cannot override a user's disabled Grilling, evaluation gate or approval setting.
 
 ## Live behavior
 

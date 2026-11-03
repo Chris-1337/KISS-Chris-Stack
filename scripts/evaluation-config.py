@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 
-DEFAULTS = {"plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+DEFAULTS = {"grill-me": True, "plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
 
 
 def unique_object(pairs):

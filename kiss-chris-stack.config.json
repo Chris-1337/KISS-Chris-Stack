@@ -1,4 +1,5 @@
 {
+  "grill-me": true,
   "plan-mode": false,
   "evaluation": {
     "live": { "enabled": true },

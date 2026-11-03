@@ -307,7 +307,7 @@ def test_bundled_resources_match_their_provenance_hashes():
 def test_grilling_is_discoverable_attributed_and_integrity_checked():
     native = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
     skill = ROOT / native["skills"] / "grilling" / "SKILL.md"
-    assert skill.is_file(), "Always-on grilling must be shipped as a discoverable bundled skill"
+    assert skill.is_file(), "Grilling must be shipped as a discoverable bundled skill"
     content = skill.read_text(encoding="utf-8")
     assert re.search(r"(?m)^name:\s*grilling\s*$", content)
     assert re.search(r"(?m)^description:\s*\S", content)
@@ -324,12 +324,14 @@ def test_grilling_is_discoverable_attributed_and_integrity_checked():
 
 
 @pytest.mark.parametrize("relative", ["assets/global-stack-policy.md", "skills/kiss-chris-stack/SKILL.md"])
-def test_root_policy_makes_grilling_mandatory_before_goal_registration(relative):
+def test_root_policy_resolves_grill_me_before_automatic_goal_interview(relative):
     content = (ROOT / relative).read_text(encoding="utf-8").lower()
-    assert "grilling" in content, "Every new goal must pass through grilling"
+    assert "grilling" in content
+    assert "grill-me" in content and "evaluation-config.py" in content
+    assert "true" in content and "false" in content and "skip" in content
+    assert "default" in content and "automatic" in content
     position = content.index("grilling")
     assert content.index("docs/") < position, "Gather existing context before interviewing the user"
-    assert re.search(r"(?:always|every|mandatory)[^.\n]*grilling|grilling[^.\n]*(?:always|every|mandatory)", content)
     after_grilling = content[position:]
     assert "goal" in after_grilling and ("register" in after_grilling or "registration" in after_grilling)
     assert "plan-mode" in after_grilling, "Grilling must preserve configured goal approval"
@@ -348,16 +350,23 @@ def test_grilling_resolves_decisions_then_continues_without_closing_approval():
 
 @pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
 @pytest.mark.parametrize("plan_mode", [False, True])
-def test_live_root_hook_requires_grilling_without_changing_goal_approval(isolated_plugin, event, plan_mode):
+@pytest.mark.parametrize("grill_me", [None, False, True])
+def test_live_root_hook_routes_configurable_grilling_without_changing_goal_approval(isolated_plugin, event, plan_mode, grill_me):
     plugin, project, profile, _ = isolated_plugin
     path = project / "kiss-chris-stack.config.json"
-    original = json.dumps({"plan-mode": plan_mode}).encode()
+    configuration = {"plan-mode": plan_mode}
+    if grill_me is not None:
+        configuration["grill-me"] = grill_me
+    original = json.dumps(configuration).encode()
     path.write_bytes(original)
     context = _root_context(isolated_plugin, event).lower()
     assert json.dumps(str(plugin / "skills/grilling/SKILL.md")).lower() in context
     position = context.index("grilling")
     assert "context" in context[:position], "Grilling follows project context, not installation onboarding"
-    assert re.search(r"(?:always|every|mandatory)[^.\n]*grilling|grilling[^.\n]*(?:always|every|mandatory)", context)
+    assert "grill-me" in context and "evaluation-config.py" in context
+    assert "default" in context and "true" in context and "false" in context
+    assert "skip" in context and "automatic" in context
+    assert "always run grilling" not in context
     assert "register" in context[position:] and "goal" in context[position:]
     assert re.search(r"(?:continue|proceed|resume)[^.\n]*automatic|automatic[^.\n]*(?:continue|proceed|resume)", context[position:])
     assert "plan-mode" in context[position:] and "explicit" in context[position:] and "approval" in context[position:]
@@ -372,7 +381,7 @@ def test_delegated_role_does_not_restart_grilling(isolated_plugin):
     assert "existing goal" in context
 
 
-def test_grilling_cannot_be_disabled_by_a_new_configuration_switch(tmp_path):
+def test_unsupported_grilling_alias_is_rejected_without_changing_configuration(tmp_path):
     path = tmp_path / "kiss-chris-stack.config.json"
     path.write_text('{"grilling": false}', encoding="utf-8")
     result = subprocess.run([sys.executable, str(ROOT / "scripts/evaluation-config.py"), "--project", str(tmp_path)], text=True, capture_output=True, timeout=15)
@@ -427,3 +436,25 @@ def test_runtime_policy_update_preserves_foreign_bytes_and_is_idempotent(tmp_pat
     assert module.policy_current(target) is True
     module.update_policy(target)
     assert target.read_bytes() == first
+
+
+@pytest.mark.parametrize("relative", [
+    "skills/grilling/SKILL.md", "skills/evaluate/SKILL.md", "skills/setup/SKILL.md",
+    "README.md", "docs/EVALUATION.md", "docs/ARCHITEKTUR.md", "docs/PRODUKT-ONBOARDING.md",
+    "agents/openai.yaml", "skills/kiss-chris-stack/agents/openai.yaml",
+])
+def test_current_entrypoints_document_configurable_grilling(relative):
+    content = (ROOT / relative).read_text(encoding="utf-8").lower()
+    assert "grill-me" in content, f"Expose the supported switch consistently in {relative}"
+    assert "true" in content or "default" in content
+
+
+def test_grilling_skill_preserves_explicit_invocation_when_automatic_interviews_are_disabled():
+    content = (ROOT / "skills/grilling/SKILL.md").read_text(encoding="utf-8").lower()
+    assert "grill-me" in content and "false" in content and "automatic" in content
+    assert "explicit" in content and ("invoke" in content or "invocation" in content or "request" in content)
+
+
+def test_repository_default_keeps_grill_me_enabled():
+    configuration = json.loads((ROOT / "kiss-chris-stack.config.json").read_text(encoding="utf-8"))
+    assert configuration.get("grill-me") is True
