@@ -6,11 +6,11 @@ A Codex plugin with bundled skills, lifecycle hooks, and verified local setup. T
 
 ## Purpose
 
-Understand projects, define strong goals, and implement the smallest complete change against reliable criteria. Missing information and decisions are clarified with the user before dependent work.
+Understand projects, define strong goals, and implement the smallest complete change against reliable criteria. Grilling always resolves the task decisions before each new goal, after project context and feedback review. Its prerequisite-aware rounds wait for unresolved user answers; when decisions are settled it continues automatically without a closing confirmation. Clear requests need no invented questions. The independent configured goal approval remains unchanged.
 
 ## Responsibilities
 
-Ponytail minimizes code, Caveman communication, and RTK shell output. CodeGraph provides structure/impact. UI-UX-Pro-Max supports UI tasks with search code and data. The orchestrator manages the goal; test, implementation, and evaluation agents remain separate.
+Grilling resolves decisions before every new goal; Ponytail minimizes code, Caveman communication, and RTK shell output. CodeGraph provides structure/impact. UI-UX-Pro-Max supports UI tasks with search code and data. The orchestrator manages the goal; test, implementation, and evaluation agents remain separate.
 
 ## Architecture diagram
 
@@ -24,7 +24,8 @@ flowchart TD
     S --> M[Real MCP tool call in this session]
     M --> C[Read documentation, traces, code, and designs]
     C --> F[Review relevant feedback and derive acceptance checks]
-    F --> G[Strong native goal]
+    F --> Q[Always run Grilling: resolve decisions in rounds]
+    Q -->|Decisions settled: automatic, no closing confirmation| G[Strong native goal]
     G --> PMode{plan-mode?}
     PMode -->|false: default| T[Test agent: RED]
     PMode -->|true| A[Present goal, request approval, end turn]
@@ -56,7 +57,7 @@ The [shared policy](../assets/global-stack-policy.md) remains authoritative. Ins
 - Three stack handlers and three original Ponytail lifecycle handlers.
 - Current readiness checks instead of cached success flags.
 - Marker-managed global rules preserving unrelated configuration.
-- Context before the goal and independent evaluation.
+- Context and mandatory Grilling before every new goal, automatic continuation without a closing confirmation, and independent evaluation.
 - [Learning from feedback](LEARNING.md): retain scoped lessons, review them before goals and carry prevention checks to all three roles.
 
 ## Limits
@@ -73,7 +74,7 @@ The repository contains the marketplace and complete plugin. No public directory
 
 ## Training and onboarding
 
-Guide a small task through setup, context, goal, RED, GREEN, and independent evaluation. People read architecture/ADRs; agents add brief traces. Open limits and decisions remain visible.
+Guide a small task through setup, context, Grilling, goal, RED, GREEN, and independent evaluation. Continue the same Grilling interview across replies; onboarding/setup and delegated roles do not start another interview. People read architecture/ADRs; agents add brief traces. Open limits and decisions remain visible.
 
 ## Operating model
 

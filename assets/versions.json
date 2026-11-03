@@ -20,5 +20,10 @@
   "caveman": {
     "repository": "https://github.com/JuliusBrussee/caveman",
     "version": "local installed snapshot; upstream release unverified"
+  },
+  "grilling": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "7739eaed7f8f3915437a8def198a6d0d7206dbc7",
+    "path": "skills/productivity/grilling/SKILL.md"
   }
 }
