@@ -2,6 +2,8 @@
 
 import base64
 import importlib.util
+import json
+import os
 import runpy
 import shutil
 import struct
@@ -48,7 +50,7 @@ def target(tmp_path, monkeypatch):
     (home / ".ssh/id_ed25519").write_text("host private credential")
     (home / ".git-credentials").write_text("host git credential")
     monkeypatch.setenv("HOME", str(home))
-    root = tmp_path / 'remote workspace "quoted"'
+    root = tmp_path / "remote workspace"
     root.mkdir()
     (root / "compose.yaml").write_text("services: {}\n")
     return root, home
@@ -128,8 +130,9 @@ def test_fresh_preparation_creates_dedicated_key_and_pinned_target(
         public_key().split()[:2]
     ) + "\n"
     assert (runtime / "ssh_config").is_file()
-    assert (runtime.stat().st_mode & 0o077) == 0
-    assert ((runtime / "id_ed25519").stat().st_mode & 0o077) == 0
+    if os.name != "nt":
+        assert (runtime.stat().st_mode & 0o077) == 0
+        assert ((runtime / "id_ed25519").stat().st_mode & 0o077) == 0
     assert snapshot(home) == original_credentials
     assert all(
         b"host private credential" not in data
@@ -153,10 +156,26 @@ def test_fresh_preparation_creates_dedicated_key_and_pinned_target(
     )
 
 
+@pytest.mark.parametrize(
+    "quoted",
+    [
+        False,
+        pytest.param(
+            True,
+            marks=pytest.mark.skipif(
+                os.name == "nt", reason="Windows filenames cannot contain quotes"
+            ),
+        ),
+    ],
+)
 def test_ssh_config_is_usable_with_space_and_quote_paths(
-    helper, target, monkeypatch
+    helper, target, monkeypatch, quoted
 ):
     root, _ = target
+    if quoted:
+        quoted_root = root.with_name(root.name + ' "quoted"')
+        root.rename(quoted_root)
+        root = quoted_root
     mock_commands(monkeypatch, root)
     helper.prepare(root)
     ssh = shutil.which("ssh")
@@ -180,6 +199,45 @@ def test_ssh_config_is_usable_with_space_and_quote_paths(
     assert settings["userknownhostsfile"].strip('"') == str(
         root / ".runtime/known_hosts"
     )
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows private-key ACL check")
+def test_native_windows_key_has_private_acl(helper, target, monkeypatch):
+    root, _ = target
+    mock_commands(monkeypatch, root)
+    mocked_run = subprocess.run
+
+    def run(argv, **kwargs):
+        if argv[0] == "ssh-keygen":
+            return REAL_RUN(argv, **kwargs)
+        return mocked_run(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", run)
+    helper.prepare(root)
+    powershell = shutil.which("pwsh") or shutil.which("powershell")
+    assert powershell, "PowerShell is required to inspect native Windows ACLs"
+    script = """
+$ErrorActionPreference = 'Stop'
+$acl = Get-Acl -LiteralPath $env:KISS_TEST_PRIVATE_KEY
+[pscustomobject]@{
+    User = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    Owner = $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+    Grants = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]) |
+        Where-Object { $_.AccessControlType -eq 'Allow' } |
+        ForEach-Object { $_.IdentityReference.Value })
+} | ConvertTo-Json -Compress
+"""
+    result = REAL_RUN(
+        [powershell, "-NoProfile", "-NonInteractive", "-Command", script],
+        env={**os.environ, "KISS_TEST_PRIVATE_KEY": str(root / ".runtime/id_ed25519")},
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    acl = json.loads(result.stdout)
+    assert acl["Owner"] == acl["User"]
+    assert acl["User"] in acl["Grants"]
+    assert set(acl["Grants"]) <= {acl["User"], "S-1-5-18", "S-1-5-32-544"}
 
 
 @pytest.mark.parametrize("public_key_exists", [True, False])

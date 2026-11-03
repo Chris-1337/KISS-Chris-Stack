@@ -26,6 +26,8 @@ Clone the repository into your normal repositories directory, outside the host's
 python3 containers/remote/prepare.py
 ```
 
+On Windows PowerShell, use `python containers/remote/prepare.py` with Docker Desktop running Linux containers.
+
 The helper builds and starts the Compose service, creates a dedicated key pair only when missing, reads the server's public host key directly from the container, and writes these local files:
 
 - `containers/remote/.runtime/id_ed25519`: private client key, not mounted.
@@ -39,6 +41,13 @@ If port 2222 is occupied, set `KISS_SSH_PORT` to an available port before prepar
 
 ```sh
 KISS_SSH_PORT=2223 python3 containers/remote/prepare.py
+```
+
+In Windows PowerShell, use:
+
+```powershell
+$env:KISS_SSH_PORT = '2223'
+python containers/remote/prepare.py
 ```
 
 The generated SSH fragment and pinned key entry use the selected port.
@@ -97,4 +106,4 @@ Restart using the same preparation command. Do not use `down -v` or volume pruni
 
 Validation covers ARM64 containers and Linux/AMD64 containers emulated on Apple Silicon. On an x86-64 Docker engine, use the same preparation command; no platform override is required.
 
-The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Device sign-in and graphical hook approval were completed by a human tester, followed by verified setup completion and a real CodeGraph MCP call in the remote desktop chat. Native x86 hardware and Windows hosts remain untested; the GUI actions were not automated.
+The contribution's verification evidence and remaining limitations are recorded in [the container trace](../agent-traces/remote-container/2026-10-30-encapsulated-environment.md). Device sign-in and graphical hook approval were completed by a human tester on macOS, followed by verified setup completion and a real CodeGraph MCP call in the remote desktop chat. [Windows-host validation](../agent-traces/remote-container/2026-11-03-windows-validation.md) separately verifies native OpenSSH, Linux/AMD64 Docker builds, the isolation boundary and restart persistence. The graphical Windows onboarding and hook-approval flow remains unverified; the GUI actions were not automated.
