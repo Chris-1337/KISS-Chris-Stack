@@ -20,6 +20,8 @@ The SSH daemon starts as root to protect its server host keys and switch user id
 
 Prerequisites on the host: Docker with Compose, Python 3.10+, OpenSSH (`ssh` and `ssh-keygen`), and a Codex desktop app with SSH connections. Node.js, Python, Git and Codex CLI are installed inside the image. The image uses Debian 13 because the pinned Linux ARM64 RTK binary requires a newer glibc than Debian 12 provides.
 
+On macOS, Colima is also supported as the Docker runtime when the Docker CLI and Compose target its running VM. Use the same preparation command below. The user confirmed a successful test on a Mac with Colima.
+
 Clone the repository into your normal repositories directory, outside the host's skill-discovery directories (such as `~/.codex/skills`). This checkout provides the container deployment; install and enable the KISS plugin inside the remote environment. No host KISS skill is required. Run from the repository root:
 
 ```sh
