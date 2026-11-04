@@ -42,10 +42,10 @@ def test_research_agents_only_collect_module_evidence_and_write_module_notes():
     assert re.search(r"(?:do not|must not|never|no)[^.\n]*(?:traverse|inspect|read)[^.\n]*(?:other modules|another module|target modules)", documentation), "Record imports without following other module sources"
 
 
-def test_root_waits_for_all_research_then_synthesizes_linked_module_documentation():
+def test_root_waits_for_all_research_then_delegates_linked_documentation_synthesis():
     documentation = setup_documentation()
     assert re.search(r"(?:wait|after|once)[^.\n]*all[^.\n]*(?:research|agent|notes)", documentation), "Root synthesis must wait for every assigned researcher"
-    assert re.search(r"(?:root|main agent)[^.\n]*(?:synthes|curat|organize)", documentation)
+    assert re.search(r"(?:delegat|assign|dispatch)[^.\n]*(?:synthes|documentation agent)|(?:synthes|documentation agent)[^.\n]*(?:delegat|assign|dispatch)", documentation), "The root coordinates and reviews; a separate agent writes synthesized documentation"
     assert re.search(r"module[^.\n]*architecture", documentation)
     assert re.search(r"(?:responsibil|purpose)", documentation)
     assert re.search(r"(?:interface|entry point)", documentation)

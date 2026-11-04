@@ -1,6 +1,6 @@
 interface:
   display_name: "Project Setup"
   short_description: "Verify local tooling, policy, MCP and project documentation."
-  default_prompt: "Use $setup to verify readiness, fill documentation gaps through module-scoped GPT-6 Luna low research and root synthesis, then run native /init and optimize project AGENTS.md."
+  default_prompt: "Use $setup to ask the local/GitHub/GitLab storage choice and target on first initialization or explicit setup, showing the current selection and waiting before dependent writes; ordinary readiness reuses validated config without prompting. Then verify readiness, prepare/check the binding, fill documentation gaps with Luna-low research and delegated synthesis, and dispatch native /init with delegated AGENTS.md review."
 policy:
   allow_implicit_invocation: true

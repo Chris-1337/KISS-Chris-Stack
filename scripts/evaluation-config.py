@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Resolve project switches; optionally backfill missing defaults in existing configuration."""
+"""Resolve workflow/evaluation switches and Wayfinder target; optionally backfill missing defaults."""
 import argparse
+import ipaddress
 import json
+import ntpath
 import os
+import re
 import shutil
 import stat
 import subprocess
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from urllib.parse import urlsplit
 
 
-DEFAULTS = {"grill-me": True, "plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+DEFAULTS = {"grill-me": True, "grill-with-docs": True, "wayfinder": True, "wayfinder-tracker": {"provider": "local", "directory": ".scratch"}, "plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+IS_RESERVED = getattr(ntpath, "isreserved", lambda value: PureWindowsPath(value).is_reserved())
 
 
 def unique_object(pairs):
@@ -22,13 +27,70 @@ def unique_object(pairs):
     return result
 
 
+def valid_gitlab_authority(parsed):
+    host = parsed.hostname or ""
+    if ":" in host:
+        if not re.fullmatch(r"[0-9A-Fa-f:]+", host):
+            return False
+        ipaddress.IPv6Address(host)
+        authority = rf"\[{re.escape(host)}\](?::[0-9]+)?"
+    else:
+        labels = host.split(".")
+        if len(host) > 253 or any(not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label) for label in labels):
+            return False
+        if "." in host and host.replace(".", "").isdigit():
+            ipaddress.IPv4Address(host)
+        authority = rf"{re.escape(host)}(?::[0-9]+)?"
+    return bool(re.fullmatch(authority, parsed.netloc, re.IGNORECASE)) and (parsed.port is None or 1 <= parsed.port <= 65535)
+
+
+def validate_tracker_directory(target):
+    parts = target.split("/")
+    if (PurePosixPath(target).is_absolute() or PureWindowsPath(target).drive or "\\" in target
+            or any(part.casefold() in ("", ".", "..", ".git", ".codegraph", ".scannerwork", ".sonar-evidence", ".env")
+                   or part.endswith((".", " ")) or IS_RESERVED(part) for part in parts)
+            or any(char in target for char in "`<>:*?\"|")):
+        raise ValueError("wayfinder-tracker.directory must be a safe project-relative directory")
+
+
+def validate_github_repository(target):
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+", target) or target.split("/")[1] in (".", ".."):
+        raise ValueError("wayfinder-tracker.repository must be github.com OWNER/REPO")
+
+
+def validate_gitlab_project(target):
+    parsed = urlsplit(target)
+    if (parsed.scheme != "https" or not parsed.hostname or parsed.username is not None or parsed.password is not None
+            or "?" in target or "#" in target or not valid_gitlab_authority(parsed)
+            or not re.fullmatch(r"(?:/[A-Za-z0-9_.-]+){2,}", parsed.path)
+            or any(part in (".", "..") for part in parsed.path.split("/"))):
+        raise ValueError("wayfinder-tracker.project must be an HTTPS project URL without credentials, query or fragment")
+
+
+def resolve_tracker(value):
+    if not isinstance(value, dict) or value.get("provider") not in ("local", "github", "gitlab"):
+        raise ValueError("wayfinder-tracker must select provider local, github or gitlab")
+    provider = value["provider"]
+    field = {"local": "directory", "github": "repository", "gitlab": "project"}[provider]
+    if value.keys() - {"provider", field}:
+        raise ValueError("wayfinder-tracker contains unsupported provider-specific keys")
+    target = value.get(field, ".scratch" if provider == "local" else None)
+    if not isinstance(target, str) or not target or target != target.strip() or any(ord(char) < 32 for char in target):
+        raise ValueError(f"wayfinder-tracker.{field} must be a nonempty string")
+    validators = {"local": validate_tracker_directory, "github": validate_github_repository, "gitlab": validate_gitlab_project}
+    validators[provider](target)
+    return {"provider": provider, field: target}
+
+
 def resolve_settings(settings, defaults, location="configuration"):
     if not isinstance(settings, dict) or settings.keys() - defaults.keys():
         raise ValueError(f"{location} must be an object containing only supported keys")
     result = {}
     for key, default in defaults.items():
         value = settings.get(key, default)
-        if isinstance(default, dict):
+        if location == "configuration" and key == "wayfinder-tracker":
+            result[key] = resolve_tracker(value)
+        elif isinstance(default, dict):
             result[key] = resolve_settings(value, default, f"{location}.{key}")
         elif type(value) is bool:
             result[key] = value

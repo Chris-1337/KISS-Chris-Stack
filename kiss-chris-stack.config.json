@@ -1,8 +1,18 @@
 {
   "grill-me": true,
+  "grill-with-docs": true,
+  "wayfinder": true,
   "plan-mode": false,
   "evaluation": {
-    "live": { "enabled": true },
-    "sonarqube": { "enabled": true }
+    "live": {
+      "enabled": true
+    },
+    "sonarqube": {
+      "enabled": true
+    }
+  },
+  "wayfinder-tracker": {
+    "provider": "local",
+    "directory": ".scratch"
   }
 }

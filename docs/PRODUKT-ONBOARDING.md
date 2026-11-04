@@ -2,31 +2,38 @@
 
 ## What is it?
 
-A Codex plugin with bundled skills, lifecycle hooks, and verified local setup. The root session gathers context and orchestrates separate agents for tests, implementation, and evaluation.
+A Codex plugin with bundled skills, lifecycle hooks, and verified local setup. The active root session delegates context collection and substantive work, coordinating separate agents for tests, implementation, and evaluation.
 
 ## Purpose
 
-Understand projects, define strong goals, and implement the smallest complete change against reliable criteria. Top-level `grill-me` defaults to `true`: Grilling resolves task decisions before each new goal, after project context and feedback review. Set it to `false` to skip automatic Grilling and continue to the goal; explicit invocation remains available. Readiness, context/feedback review and evaluation stay required. Its prerequisite-aware rounds wait for unresolved user answers; when decisions are settled it continues automatically without a closing confirmation. Clear requests need no invented questions. The independent configured goal approval remains unchanged.
+Classify before setup: tiny bounded low-risk fixes use a delegated direct worker and focused checks without setup/goal/triad overhead; clear normal features/bugs use stack with goal; unclear normal work uses grill-with-docs before goal; large work uses Wayfinder followed by every unblocked ticket in parallel through stack goals.
+
+Independent strict Boolean `grill-with-docs` and `wayfinder` default to true and enable their selected automatic routes. Legacy `grill-me` defaults true but remains explicit-only, with no extra automatic interview. Explicit skill requests remain available when automatic switches are false. Unresolved decisions still wait for actual human answers; once settled interviews continue automatically without a closing confirmation. Independent `plan-mode=true` still requires explicit approval of the strong registered goal before implementation phases.
 
 ## Responsibilities
 
-Grilling resolves decisions before every new goal when `grill-me=true` (default); Ponytail minimizes code, Caveman communication, and RTK shell output. CodeGraph provides structure/impact. UI-UX-Pro-Max supports UI tasks with search code and data. The orchestrator manages the goal; test, implementation, and evaluation agents remain separate.
+The active session delegates substantive work with sufficient context, retaining native goals, approval/question relay and evidence review. All pure fact gathering always uses fresh GPT-6 Luna (`gpt-6-luna`, low reasoning, no inherited context) agents: referenced facts/notes only, no implementation/source/configuration changes, design decisions or speculation. Missing model/effort support blocks required collection without silent fallback. Interview/planning and documentation are separate roles; root schedules test RED, implementation GREEN and independent evaluation for stack work. Ponytail minimizes code, Caveman communication, RTK output; CodeGraph supplies structure and UI-UX-Pro-Max supports UI tasks.
 
 ## Architecture diagram
 
 ```mermaid
 flowchart TD
     H[Codex: plugin enabled, hooks trusted] --> E[Root event]
-    E --> P{Root project config exists?}
+    E --> Route{Classify before setup}
+    Route -->|Tiny clear low-risk| Direct[Delegated direct worker and focused checks]
+    Route -->|Stack routes| P{Root project config exists?}
     P -->|No| S[Setup: runtime and documentation bootstrap]
     P -->|Yes| R[Add missing config defaults, then runtime checks]
     R --> M
     S --> M[Real MCP tool call in this session]
-    M --> C[Read documentation, traces, code, and designs]
+    M --> C[Fresh Luna low agents collect facts and feedback]
     C --> F[Review relevant feedback and derive acceptance checks]
-    F --> Grill{grill-me?}
-    Grill -->|true: default| Q[Grilling: resolve decisions in rounds]
-    Grill -->|false: skip automatic Grilling| G
+    F --> Kind{Scope and clarity}
+    Kind -->|Normal clear| G
+    Kind -->|Normal unclear| Q[Delegated grill-with-docs and domain documentation]
+    Kind -->|Large| Map[Wayfinder map and dependencies]
+    Map --> Tickets[All ready tickets within slots and isolated writes]
+    Tickets --> G
     Q -->|Decisions settled: automatic, no closing confirmation| G[Strong native goal]
     G --> PMode{plan-mode?}
     PMode -->|false: default| T[Test agent: RED]
@@ -50,18 +57,22 @@ flowchart TD
 
 ## Usage
 
-The [shared policy](../assets/global-stack-policy.md) remains authoritative. Installation onboarding takes priority over root readiness instructions until its consent/path dialogue ends. For later ordinary tasks, project-root `kiss-chris-stack.config.json` is the sole initialization indicator: absence invokes setup; presence requires the root to execute the hook-provided `evaluation-config.py --update` argv, validating configuration and adding only missing current defaults before fresh runtime/MCP checks without repeated project initialization. Explicit values remain unchanged. The bare hook remains read-only; pending/declined installation onboarding and delegated roles do not run this updater. Setup creates a missing default config only after successful runtime/session MCP and documentation bootstrap; existing settings remain intact. Invalid configuration blocks setup. Sub-agents do not start recursive goals or setup chains. `docs/` contains human architecture, business decisions, and ADRs; `agent-traces/<component>/` contains brief evidenced goal notes. First-time setup and explicit `/setup` fill documentation gaps and preserve existing files. Documentation and internal reasoning use English; user-facing communication follows the language of the prompt, as recorded in [ADR 0003](adr/0003-documentation-language.md).
+The [shared policy](../assets/global-stack-policy.md) remains authoritative. Installation onboarding takes priority over root readiness instructions until its consent/path dialogue ends. For later selected stack tasks, project-root `kiss-chris-stack.config.json` is the sole initialization indicator: absence invokes setup; presence requires the root to execute the hook-provided `evaluation-config.py --update` argv, validating configuration and adding only missing current defaults before fresh runtime/MCP checks without repeated project initialization. Explicit values remain unchanged. The bare hook remains read-only; pending/declined installation onboarding and delegated roles do not run this updater. Setup creates a missing default config only after successful runtime/session MCP and documentation bootstrap; existing settings remain intact. Invalid configuration blocks setup. Sub-agents do not start recursive goals or setup chains. `docs/` contains human architecture, business decisions, and ADRs; `agent-traces/<component>/` contains brief evidenced goal notes. First-time setup and explicit `/setup` fill documentation gaps and preserve existing files. Documentation and internal reasoning use English; user-facing communication follows the language of the prompt, as recorded in [ADR 0003](adr/0003-documentation-language.md).
+
+## Configured Wayfinder storage
+
+`wayfinder-tracker` is independent of the Boolean `wayfinder` and defaults to local `.scratch`; explicit GitHub.com repositories and GitLab HTTPS project URLs are supported. First initialization and every explicit `/setup` ask local/GitHub/GitLab, show any current provider/location and wait for a keep/change answer and target before dependent writes; defaults are not consent. Ordinary per-task readiness reuses validated config without another prompt. [Setup](../skills/setup/SKILL.md#configured-wayfinder-tracker) prepares/checks the selected root and a managed operations document, not a fake map/tickets. The selected target is authoritative; missing hosted CLI/auth/access blocks without fallback or automatic login/install. First setup retains the chosen full pending config until final marker creation; existing-project reconciliation preserves old tickets and avoids docs bootstrap/native init. See [examples and operational limits](WAYFINDER.md).
 
 ## Features
 
-- Module documentation during first-time or explicit setup: one fresh-context GPT-6 Luna (`gpt-6-luna`, reasoning `low`) researcher per real module collects only module-local evidence; the root then organizes the retained notes into linked architecture and usage documents under `docs/<module>/`, preserving existing layouts. Unavailable agents/model settings or incomplete research prevent bootstrap success; see [the module workflow](../skills/setup/SKILL.md#module-research-and-synthesis).
-- Final setup instruction review: after documentation, native `/init` prepares project `AGENTS.md` and the root refines concise, evidence-backed guidance while preserving unique valid rules and instruction scopes. An existing file is reused if native initialization refuses it; unavailable native dispatch leaves setup pending for a manual run and review. See [the final instruction phase](../skills/setup/SKILL.md#native-initialization-and-project-instructions).
-- All stack skills, including the Ponytail suite and UIUX search resources, in the plugin.
+- Module documentation during first-time or explicit setup: one fresh-context GPT-6 Luna (`gpt-6-luna`, reasoning `low`) researcher per real module collects only module-local evidence; the root then assigns a separate documentation role to organize retained notes into linked architecture and usage documents under `docs/<module>/`, preserving existing layouts. Unavailable agents/model settings or incomplete research prevent bootstrap success; see [the module workflow](../skills/setup/SKILL.md#module-research-and-synthesis).
+- Final setup instruction review: after documentation, native `/init` prepares project `AGENTS.md` and a delegated documentation role refines concise, evidence-backed guidance for root review while preserving unique valid rules and instruction scopes. An existing file is reused if native initialization refuses it; unavailable native dispatch leaves setup pending for a manual run and review. See [the final instruction phase](../skills/setup/SKILL.md#native-initialization-and-project-instructions).
+- All stack skills, including grill-with-docs, Wayfinder and their transitive skill/resource dependencies, the Ponytail suite and UIUX search resources, in the plugin.
 - Native Codex marketplace installation with consent-first onboarding and an explicit project path.
 - Three stack handlers and three original Ponytail lifecycle handlers.
 - Current readiness checks instead of cached success flags.
 - Marker-managed global rules preserving unrelated configuration.
-- Context before every new goal and Grilling enabled by default through `grill-me`, with automatic continuation without a closing confirmation, and independent evaluation.
+- Facts-only Luna-low context before every stack goal, delegated interviews/documentation for unclear normal work, parallel dependency-ready Wayfinder tickets and independent evaluation.
 - [Learning from feedback](LEARNING.md): retain scoped lessons, review them before goals and carry prevention checks to all three roles.
 
 ## Limits
@@ -78,8 +89,8 @@ The repository contains the marketplace and complete plugin. No public directory
 
 ## Training and onboarding
 
-Guide a small task through setup, context, configured Grilling, goal, RED, GREEN, and independent evaluation. Continue the same Grilling interview across replies; onboarding/setup and delegated roles do not start another interview. People read architecture/ADRs; agents add brief traces. Open limits and decisions remain visible.
+Guide a tiny clear fix through delegated direct work, then a normal task through readiness, Luna-low context, selected grill-with-docs if unclear, goal, RED, GREEN and independent evaluation. For large work demonstrate a Wayfinder frontier and root-scheduled parallel ticket phases. Continue the same interview across replies; onboarding/setup and delegated roles do not restart it. People read architecture/ADRs; agents add brief traces. Open limits and decisions remain visible.
 
 ## Operating model
 
-The host loads the plugin and starts the registered CodeGraph MCP service. After installation onboarding, ordinary root tasks recheck tools, index, and rules even when project configuration marks initialization complete. Documentation contents never substitute for this marker or current readiness. Updates may require reload or renewed hook review. Readiness requires executable checks and a real session tool call; the checker therefore reports `runtime_ready` separately from overall readiness.
+The host loads the plugin and starts the registered CodeGraph MCP service. After installation onboarding, selected stack root tasks recheck tools, index, and rules even when project configuration marks initialization complete. Documentation contents never substitute for this marker or current readiness. Updates may require reload or renewed hook review. Readiness requires executable checks and a real session tool call; the checker therefore reports `runtime_ready` separately from overall readiness.

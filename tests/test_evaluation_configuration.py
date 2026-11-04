@@ -13,7 +13,7 @@ import pytest
 ROOT = Path(__file__).parents[1]
 HELPER = ROOT / "scripts/evaluation-config.py"
 SKILL = ROOT / "skills/evaluate/SKILL.md"
-DEFAULTS = {"grill-me": True, "plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
+DEFAULTS = {"grill-me": True, "grill-with-docs": True, "wayfinder": True, "wayfinder-tracker": {"provider": "local", "directory": ".scratch"}, "plan-mode": False, "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": True}}}
 
 
 @pytest.fixture
@@ -28,6 +28,9 @@ def test_resolver_preserves_input_and_fills_independent_defaults(config_module):
     settings = {"evaluation": {"sonarqube": {"enabled": False}}}
     assert config_module.resolve_settings(settings, config_module.DEFAULTS) == {
         "grill-me": True,
+        "grill-with-docs": True,
+        "wayfinder": True,
+        "wayfinder-tracker": {"provider": "local", "directory": ".scratch"},
         "plan-mode": False,
         "evaluation": {"live": {"enabled": True}, "sonarqube": {"enabled": False}},
     }
@@ -56,7 +59,7 @@ def test_main_reads_actual_project_and_emits_normalized_config(config_module, tm
     config_module.main()
     captured = capsys.readouterr()
     assert not captured.err
-    expected = {"grill-me": True, "plan-mode": False, "evaluation": {"live": {"enabled": content is None}, "sonarqube": {"enabled": True}}}
+    expected = {**DEFAULTS, "evaluation": {"live": {"enabled": content is None}, "sonarqube": {"enabled": True}}}
     assert json.loads(captured.out) == expected
 
 
@@ -104,7 +107,7 @@ def test_switches_are_independent_real_booleans(tmp_path, live, sonarqube):
     original = path.read_bytes()
     result = run_config(tmp_path)
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == {"grill-me": True, "plan-mode": False, **configuration}
+    assert json.loads(result.stdout) == {**DEFAULTS, **configuration}
     assert path.read_bytes() == original, "Reading configuration must not rewrite project files"
 
 
@@ -120,7 +123,7 @@ def test_plan_mode_is_independent_of_evaluation_gates(tmp_path, plan_mode, live,
     original = path.read_bytes()
     result = run_config(tmp_path)
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == {"grill-me": True, **configuration}
+    assert json.loads(result.stdout) == {**DEFAULTS, **configuration}
     assert path.read_bytes() == original
 
 
@@ -138,6 +141,7 @@ def test_plan_mode_rejects_non_boolean_values(tmp_path, plan_mode):
     {"plan-mode": True, "evaluation": {"sonarqube": {"enabled": False}}},
     {"evaluation": {"live": {}, "sonarqube": {}}},
     {"grill-me": False, "plan-mode": True, "evaluation": {"live": {"enabled": False}}},
+    {"grill-with-docs": False, "wayfinder": False, "plan-mode": True},
 ])
 def test_update_persists_only_missing_default_fields(tmp_path, settings):
     path = tmp_path / "kiss-chris-stack.config.json"
@@ -145,6 +149,9 @@ def test_update_persists_only_missing_default_fields(tmp_path, settings):
     mode = stat.S_IMODE(path.stat().st_mode)
     expected = {
         "grill-me": settings.get("grill-me", True),
+        "grill-with-docs": settings.get("grill-with-docs", True),
+        "wayfinder": settings.get("wayfinder", True),
+        "wayfinder-tracker": settings.get("wayfinder-tracker", DEFAULTS["wayfinder-tracker"]),
         "plan-mode": settings.get("plan-mode", False),
         "evaluation": {
             key: {"enabled": settings.get("evaluation", {}).get(key, {}).get("enabled", True)}
@@ -161,7 +168,7 @@ def test_update_persists_only_missing_default_fields(tmp_path, settings):
 
 def test_update_of_complete_configuration_preserves_bytes_and_mtime(tmp_path):
     path = tmp_path / "kiss-chris-stack.config.json"
-    configuration = {"grill-me": False, "plan-mode": True, "evaluation": {"live": {"enabled": False}, "sonarqube": {"enabled": False}}}
+    configuration = {**DEFAULTS, "grill-me": False, "grill-with-docs": False, "wayfinder": False, "plan-mode": True, "evaluation": {"live": {"enabled": False}, "sonarqube": {"enabled": False}}}
     original = ("\ufeff" + json.dumps(configuration, indent=4) + "\r\n").encode("utf-8")
     path.write_bytes(original)
     os.utime(path, ns=(1_600_000_000_000_000_000, 1_600_000_000_000_000_000))
@@ -187,6 +194,8 @@ def test_update_does_not_initialize_a_missing_configuration(tmp_path):
     "{broken", '{"unknown":true}', '{"plan-mode":false,"plan-mode":true}',
     '{"plan-mode":1}', '{"evaluation":{"live":false}}',
     '{"grill-me":"false"}', '{"grill-me":true,"grill-me":false}',
+    '{"grill-with-docs":true,"grill-with-docs":false}',
+    '{"wayfinder":true,"wayfinder":false}',
 ])
 def test_update_rejects_invalid_configuration_without_writing(tmp_path, content):
     path = tmp_path / "kiss-chris-stack.config.json"
@@ -407,7 +416,10 @@ def test_disabled_and_inapplicable_checks_are_visible_and_sonar_stays_fresh():
 @pytest.mark.parametrize("live,sonarqube", [(False, True), (True, False), (False, False), (True, True)])
 def test_grill_me_is_independent_and_preserved_by_reads_and_updates(tmp_path, grill_me, plan_mode, live, sonarqube):
     configuration = {
+        **DEFAULTS,
         "grill-me": grill_me,
+        "grill-with-docs": True,
+        "wayfinder": True,
         "plan-mode": plan_mode,
         "evaluation": {"live": {"enabled": live}, "sonarqube": {"enabled": sonarqube}},
     }
@@ -429,6 +441,43 @@ def test_grill_me_is_independent_and_preserved_by_reads_and_updates(tmp_path, gr
 def test_grill_me_rejects_non_booleans_without_rewriting(tmp_path, value, arguments):
     path = tmp_path / "kiss-chris-stack.config.json"
     original = json.dumps({"grill-me": value}).encode()
+    path.write_bytes(original)
+    result = run_config(tmp_path, *arguments)
+    assert result.returncode != 0
+    assert "boolean" in result.stderr.lower()
+    assert not result.stdout.strip()
+    assert path.read_bytes() == original
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("grill_with_docs,wayfinder", [(False, False), (False, True), (True, False), (True, True)])
+def test_routing_switches_are_independent_of_legacy_grilling_plan_and_evaluation(tmp_path, grill_with_docs, wayfinder):
+    configuration = {
+        **DEFAULTS,
+        "grill-me": False,
+        "grill-with-docs": grill_with_docs,
+        "wayfinder": wayfinder,
+        "plan-mode": True,
+        "evaluation": {"live": {"enabled": False}, "sonarqube": {"enabled": False}},
+    }
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = json.dumps(configuration, indent=4).encode()
+    path.write_bytes(original)
+    previous_mtime = path.stat().st_mtime_ns
+    for arguments in ((), ("--update",)):
+        result = run_config(tmp_path, *arguments)
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout) == configuration
+        assert path.read_bytes() == original
+        assert path.stat().st_mtime_ns == previous_mtime
+
+
+@pytest.mark.parametrize("switch", ["grill-with-docs", "wayfinder"])
+@pytest.mark.parametrize("value", [0, 1, "true", "false", None, {}, []])
+@pytest.mark.parametrize("arguments", [(), ("--update",)])
+def test_routing_switches_reject_non_booleans_without_rewriting(tmp_path, switch, value, arguments):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    original = json.dumps({switch: value}).encode()
     path.write_bytes(original)
     result = run_config(tmp_path, *arguments)
     assert result.returncode != 0
