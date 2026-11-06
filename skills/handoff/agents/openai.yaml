@@ -1,0 +1,6 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Bundled handoff workflow with stack delegation."
+  default_prompt: "Use $handoff under the KISS-Chris-Stack shared policy and root-assigned scope."
+policy:
+  allow_implicit_invocation: true

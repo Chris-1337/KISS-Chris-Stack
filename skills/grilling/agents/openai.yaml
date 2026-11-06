@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grilling"
+  short_description: "Resolve explicit or routed interview decisions."
+  default_prompt: "Use $grilling to resolve the decisions for this task, then continue automatically without a closing confirmation."
+policy:
+  allow_implicit_invocation: true

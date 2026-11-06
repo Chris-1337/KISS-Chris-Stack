@@ -20,5 +20,26 @@
   "caveman": {
     "repository": "https://github.com/JuliusBrussee/caveman",
     "version": "local installed snapshot; upstream release unverified"
+  },
+  "grilling": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "7739eaed7f8f3915437a8def198a6d0d7206dbc7",
+    "path": "skills/productivity/grilling/SKILL.md"
+  },
+  "mattpocock-skills": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+    "skills": {
+      "grill-with-docs": "skills/engineering/grill-with-docs",
+      "domain-modeling": "skills/engineering/domain-modeling",
+      "wayfinder": "skills/engineering/wayfinder",
+      "research": "skills/engineering/research",
+      "prototype": "skills/engineering/prototype",
+      "handoff": "skills/productivity/handoff",
+      "setup-matt-pocock-skills": "skills/engineering/setup-matt-pocock-skills"
+    },
+    "reusedDependencies": {
+      "grilling": "See the independently pinned adapted grilling entry."
+    }
   }
 }

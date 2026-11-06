@@ -1,0 +1,6 @@
+interface:
+  display_name: "Setup Matt Pocock Skills"
+  short_description: "Bundled setup-matt-pocock-skills workflow with stack delegation."
+  default_prompt: "Use $setup-matt-pocock-skills to ask the storage choice and target on explicit setup, showing the current selection and waiting before dependent writes. Reuse an answer already given in the same setup dialogue; routine readiness does not prompt. Validate and prepare/check the binding, preserve config-last initialization and never publish external tickets or change credentials."
+policy:
+  allow_implicit_invocation: true

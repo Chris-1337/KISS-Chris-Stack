@@ -1,0 +1,6 @@
+interface:
+  display_name: "Domain Modeling"
+  short_description: "Bundled domain-modeling workflow with stack delegation."
+  default_prompt: "Use $domain-modeling under the KISS-Chris-Stack shared policy and root-assigned scope."
+policy:
+  allow_implicit_invocation: true

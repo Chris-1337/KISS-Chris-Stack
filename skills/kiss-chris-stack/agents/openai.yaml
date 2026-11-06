@@ -1,7 +1,7 @@
 interface:
   display_name: "KISS-Chris-Stack"
-  short_description: "Gather context and orchestrate separate TDD agents."
-  default_prompt: "Use $kiss-chris-stack to inspect documentation and code, define the goal, honor configured plan-mode approval, and orchestrate separate test, implementation, and evaluation agents."
+  short_description: "Route tasks and coordinate delegated stack work."
+  default_prompt: "Use $kiss-chris-stack to route before setup: tiny direct fixes, clear stack goals, unclear grill-with-docs then goal, or large wayfinder with parallel unblocked tickets. Delegate all context collection to fresh gpt-6-luna low agents, substantive work to appropriate roles, preserve plan-mode approval and evaluation. Independent grill-with-docs and wayfinder default true; grill-me remains explicit."
 dependencies:
   tools:
     - type: "mcp"

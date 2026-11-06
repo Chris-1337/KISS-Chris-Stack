@@ -1,0 +1,6 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Bundled prototype workflow with stack delegation."
+  default_prompt: "Use $prototype under the KISS-Chris-Stack shared policy and root-assigned scope."
+policy:
+  allow_implicit_invocation: true

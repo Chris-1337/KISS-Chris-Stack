@@ -1,0 +1,6 @@
+interface:
+  display_name: "Research"
+  short_description: "Bundled research workflow with stack delegation."
+  default_prompt: "Use $research under the KISS-Chris-Stack shared policy and root-assigned scope."
+policy:
+  allow_implicit_invocation: true

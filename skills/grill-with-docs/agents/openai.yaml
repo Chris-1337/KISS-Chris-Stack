@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grill With Docs"
+  short_description: "Bundled grill-with-docs workflow with stack delegation."
+  default_prompt: "Use $grill-with-docs under the KISS-Chris-Stack shared policy and root-assigned scope."
+policy:
+  allow_implicit_invocation: true

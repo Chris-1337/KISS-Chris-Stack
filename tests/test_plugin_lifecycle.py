@@ -223,15 +223,54 @@ def test_root_hook_keeps_installation_onboarding_ahead_of_automatic_setup(isolat
 
 
 @pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
-def test_root_hook_rejects_directory_in_place_of_config(isolated_plugin, event):
-    _, project, _, _ = isolated_plugin
+def test_root_hook_defers_unsafe_config_block_until_stack_route_is_selected(isolated_plugin, event):
+    _, project, profile, _ = isolated_plugin
     marker = project / "kiss-chris-stack.config.json"
     marker.mkdir()
-    result = _hook(isolated_plugin, {"hook_event_name": event, "cwd": str(project)})
-    assert result.returncode != 0
-    assert not result.stdout.strip(), "A directory cannot authorize an initialized-project route"
-    assert "kiss-chris-stack.config.json" in result.stderr
+    prompt = "Fix this tiny typo without widening the change."
+    result = _hook(isolated_plugin, {"hook_event_name": event, "cwd": str(project), "prompt": prompt})
+    assert result.returncode == 0, "Unsafe stack config must not suppress direct-task routing guidance: " + result.stderr
+    context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"].lower()
+    assert prompt.lower() in context
+    assert "direct" in context and "grill-with-docs" in context and "wayfinder" in context
+    boundary = "only after selecting a stack route:"
+    assert context.index("direct") < context.index(boundary)
+    stack_context = context.split(boundary, 1)[1].split("\n\n", 1)[0]
+    assert "kiss-chris-stack.config.json" in stack_context
+    assert re.search(r"(?:unsafe|invalid|nonregular|non-regular|regular file)[^.\n]*(?:block|stop)|(?:block|stop)[^.\n]*(?:unsafe|invalid|nonregular|non-regular|regular file)", stack_context)
+    assert "execute /setup initialization" not in stack_context, "An unsafe path is not an absent initialization marker"
+    assert "already configured" not in stack_context
     assert marker.is_dir() and list(marker.iterdir()) == []
+    assert list(profile.iterdir()) == []
+
+
+@pytest.mark.parametrize("dangling", [False, True])
+def test_root_hook_defers_symlink_config_block_without_following_or_initializing(isolated_plugin, dangling):
+    _, project, profile, _ = isolated_plugin
+    target = project / "config-target.json"
+    original = b'{"wayfinder":false}\n'
+    if not dangling:
+        target.write_bytes(original)
+    marker = project / "kiss-chris-stack.config.json"
+    try:
+        marker.symlink_to(target)
+    except OSError as error:
+        pytest.skip(f"Host does not permit creating a symlink fixture: {error}")
+    result = _hook(isolated_plugin, {"hook_event_name": "UserPromptSubmit", "cwd": str(project), "prompt": "Correct one typo."})
+    assert result.returncode == 0, "A symlinked stack config must not suppress direct-task routing guidance: " + result.stderr
+    context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"].lower()
+    assert "correct one typo." in context and "direct" in context
+    stack_context = context.split("only after selecting a stack route:", 1)[1].split("\n\n", 1)[0]
+    assert "symlink" in stack_context or "symbolic link" in stack_context
+    assert "block" in stack_context or "stop" in stack_context
+    assert "execute /setup initialization" not in stack_context
+    assert "already configured" not in stack_context
+    assert marker.is_symlink() and marker.readlink() == target
+    if dangling:
+        assert not target.exists()
+    else:
+        assert target.read_bytes() == original
+    assert list(profile.iterdir()) == []
 
 
 @pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
@@ -304,6 +343,85 @@ def test_bundled_resources_match_their_provenance_hashes():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, relative
 
 
+def test_grilling_is_discoverable_attributed_and_integrity_checked():
+    native = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
+    skill = ROOT / native["skills"] / "grilling" / "SKILL.md"
+    assert skill.is_file(), "Grilling must be shipped as a discoverable bundled skill"
+    content = skill.read_text(encoding="utf-8")
+    assert re.search(r"(?m)^name:\s*grilling\s*$", content)
+    assert re.search(r"(?m)^description:\s*\S", content)
+    assert "mattpocock/skills" in content, "Identify the adapted upstream skill"
+    license_path = ROOT / "licenses/grilling-LICENSE"
+    license_text = license_path.read_text(encoding="utf-8")
+    assert "MIT License" in license_text and "Matt Pocock" in license_text
+    provenance = (ROOT / "docs/THIRD-PARTY.md").read_text(encoding="utf-8")
+    assert "mattpocock/skills" in provenance and "grilling-LICENSE" in provenance
+    hashes = json.loads((ROOT / "assets/bundle-manifest.json").read_text(encoding="utf-8"))["sha256"]
+    for path in (skill, license_path):
+        relative = path.relative_to(ROOT).as_posix()
+        assert hashes.get(relative) == hashlib.sha256(path.read_bytes()).hexdigest(), relative
+
+
+@pytest.mark.parametrize("relative", ["assets/global-stack-policy.md", "skills/kiss-chris-stack/SKILL.md"])
+def test_root_policy_selects_pre_goal_workflow_from_request_and_context(relative):
+    content = (ROOT / relative).read_text(encoding="utf-8").lower()
+    assert "grill-with-docs" in content and "wayfinder" in content
+    assert "grill-me" in content and "evaluation-config.py" in content
+    assert "explicit" in content, "Keep the legacy interview explicitly available"
+    assert "docs/" in content and "agent-traces/" in content
+    assert "plan-mode" in content and "evaluation" in content
+    assert "goal" in content and ("register" in content or "registration" in content)
+
+
+def test_grilling_resolves_decisions_then_continues_without_closing_approval():
+    content = (ROOT / "skills/grilling/SKILL.md").read_text(encoding="utf-8").lower()
+    for concept in ("decision", "prerequisite", "round", "recommend", "fact", "wait", "answer"):
+        assert concept in content, f"Preserve the upstream decision interview mechanism: {concept}"
+    assert re.search(r"(?:continue|proceed|resume)[^.\n]*automatic|automatic[^.\n]*(?:continue|proceed|resume)", content)
+    assert re.search(r"(?:no|without|do not|never)[^.\n]*(?:closing|final|shared.understanding)[^.\n]*(?:confirm|approv)|(?:no|without|do not|never)[^.\n]*(?:confirm|approv)[^.\n]*(?:closing|final|shared.understanding)", content)
+    assert "plan-mode" in content and "approval" in content
+    assert re.search(r"(?:clear|settled|resolved)[^.\n]*(?:question|ask)|(?:question|ask)[^.\n]*(?:clear|settled|resolved)", content), "Do not invent questions for an already settled request"
+    assert "do not act on it until the user confirms" not in content
+
+
+@pytest.mark.parametrize("event", ["SessionStart", "UserPromptSubmit"])
+@pytest.mark.parametrize("plan_mode", [False, True])
+@pytest.mark.parametrize("grill_me", [None, False, True])
+def test_live_root_hook_routes_new_workflows_without_changing_goal_approval(isolated_plugin, event, plan_mode, grill_me):
+    plugin, project, profile, _ = isolated_plugin
+    path = project / "kiss-chris-stack.config.json"
+    configuration = {"plan-mode": plan_mode}
+    if grill_me is not None:
+        configuration["grill-me"] = grill_me
+    original = json.dumps(configuration).encode()
+    path.write_bytes(original)
+    context = _root_context(isolated_plugin, event).lower()
+    assert json.dumps(str(plugin / "skills/kiss-chris-stack/SKILL.md")).lower() in context
+    assert "grill-with-docs" in context and "wayfinder" in context
+    assert "grill-me" in context and "evaluation-config.py" in context
+    assert "default" in context and "true" in context and "false" in context
+    assert "always run grilling" not in context
+    assert "explicit" in context and "goal" in context
+    assert "plan-mode" in context and "approval" in context
+    assert path.read_bytes() == original and list(profile.iterdir()) == []
+
+
+def test_delegated_role_does_not_restart_grilling(isolated_plugin):
+    result = _hook(isolated_plugin, {"hook_event_name": "SubagentStart", "cwd": str(isolated_plugin[1]), "agent_type": "test-author"})
+    assert result.returncode == 0, result.stderr
+    context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert "skills/grilling" not in context.replace("\\", "/"), "The root owns goal preparation; delegated roles keep their assigned goal"
+    assert "existing goal" in context
+
+
+def test_unsupported_grilling_alias_is_rejected_without_changing_configuration(tmp_path):
+    path = tmp_path / "kiss-chris-stack.config.json"
+    path.write_text('{"grilling": false}', encoding="utf-8")
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/evaluation-config.py"), "--project", str(tmp_path)], text=True, capture_output=True, timeout=15)
+    assert result.returncode != 0 and "supported keys" in result.stderr
+    assert path.read_text(encoding="utf-8") == '{"grilling": false}'
+
+
 @pytest.fixture
 def runtime_module(monkeypatch):
     monkeypatch.setattr(sys, "dont_write_bytecode", True)
@@ -351,3 +469,25 @@ def test_runtime_policy_update_preserves_foreign_bytes_and_is_idempotent(tmp_pat
     assert module.policy_current(target) is True
     module.update_policy(target)
     assert target.read_bytes() == first
+
+
+@pytest.mark.parametrize("relative", [
+    "skills/grilling/SKILL.md", "skills/evaluate/SKILL.md", "skills/setup/SKILL.md",
+    "README.md", "docs/EVALUATION.md", "docs/ARCHITEKTUR.md", "docs/PRODUKT-ONBOARDING.md",
+    "agents/openai.yaml", "skills/kiss-chris-stack/agents/openai.yaml",
+])
+def test_current_entrypoints_document_configurable_grilling(relative):
+    content = (ROOT / relative).read_text(encoding="utf-8").lower()
+    assert "grill-me" in content, f"Expose the supported switch consistently in {relative}"
+    assert "true" in content or "default" in content
+
+
+def test_grilling_skill_preserves_explicit_invocation_when_automatic_interviews_are_disabled():
+    content = (ROOT / "skills/grilling/SKILL.md").read_text(encoding="utf-8").lower()
+    assert "grill-me" in content
+    assert "explicit" in content and ("invoke" in content or "invocation" in content or "request" in content)
+
+
+def test_repository_default_keeps_grill_me_enabled():
+    configuration = json.loads((ROOT / "kiss-chris-stack.config.json").read_text(encoding="utf-8"))
+    assert configuration.get("grill-me") is True
