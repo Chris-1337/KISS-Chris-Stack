@@ -1,5 +1,7 @@
 # System architecture
 
+The [lifecycle reference](LIFECYCLE.md) connects criteria to asserted commands/results, current-source fingerprints, evidence and optional release identities through existing goals/tickets. [Host observations](HOST-TESTS.md) distinguish native/CLI/hook/CI layers and measured usage. [Delivery](DELIVERY.md) reuses the trusted finite source-only inventory and candidate checker; isolated A/B/A rehearsal does not authorize publication or prove production recovery. [Operations](OPERATIONS.md) covers risk-based handoff and authorized incident response. [Retirement](LIFECYCLE.md#retirement-and-preservation) distinguishes plugin removal from downstream decommissioning, preserving user/shared resources with actual authorization and independent verification. These use existing roles and services.
+
 KISS-Chris-Stack is a local Codex plugin, not a web application. It has no frontend or backend of its own. The host loads skills/hooks and starts configured MCP services.
 
 | Component | Responsibility and source |

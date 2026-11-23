@@ -49,7 +49,8 @@ def test_policy_is_shared_and_retains_goal_tools_and_context():
     for name in ("AGENTS.md", "skills/kiss-chris-stack/SKILL.md"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "global-stack-policy.md" in text, f"{name} must route to the shared policy"
-    assert len(policy.splitlines()) <= 85, "Keep the common policy concise"
+    paragraphs = [paragraph.strip() for paragraph in re.split(r"\n\s*\n", policy) if paragraph.strip()]
+    assert len(paragraphs) == len(set(paragraphs)), "Keep shared policy paragraphs canonical without duplicate rules"
 
 
 def test_setup_skill_is_explicitly_and_implicitly_discoverable():

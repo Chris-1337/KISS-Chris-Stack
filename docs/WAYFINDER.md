@@ -39,6 +39,10 @@ Identical preparation preserves bytes/mtime. Managed updates preserve surroundin
 
 Before first initialization, `--config-stdin` accepts full pending settings from stdin, validated by the same resolver. Prepare/check the actual chosen target without creating a marker. Only after all runtime/MCP, tracker, documentation and native-init prerequisites succeed does setup exclusively create the marker with those exact settings, then re-read configuration and check without stdin. A present or concurrently appearing conflicting marker blocks; pending defaults cannot replace a chosen backend.
 
+## Criterion evidence mapping
+
+Each ticket's existing resolution links criterion to command/assertion/result, current revision plus dirty-source fingerprint, evidence path and optional release/candidate identity/status or inapplicable reason. Apply [lifecycle evidence and retirement](LIFECYCLE.md): stale source or missing assertions never establish completion, and failed, disabled/skipped, inapplicable and unknown/unverified remain distinct. Root reviews integrated current-source checks and enabled applicable gates before closing prerequisites or the umbrella. Historical tickets retain their original evidence rather than being silently rewritten as current proof. Compatibility/usage observations identify their measured host and boundary; retirement tickets preserve user/shared resources and require actual authorization and independent post-action verification.
+
 ## Hosted prerequisites and limits
 
 Existing native `gh`/`glab` and authenticated target access are required; setup never installs a CLI, logs in, changes credentials or publishes external tickets. Preflights have no stdin, a bounded timeout, explicit host/target and read-only calls. They verify matching target identity, Issues enabled, unarchived state and visible protocol-level access: GitHub TRIAGE+ or GitLab Developer+ from documented project/group permission fields. Lower roles can sometimes create individual issues but do not satisfy the bundled label/claim protocol.

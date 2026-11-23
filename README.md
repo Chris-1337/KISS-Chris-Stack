@@ -2,7 +2,7 @@
 
 A Codex plugin that chooses the amount of workflow a software task needs. Tiny, clear, low-risk changes use a delegated direct worker. Larger or less certain work uses goals, separate roles, interviews or dependency-linked Wayfinder tickets.
 
-The plugin bundles the orchestrator, setup, Ponytail, grill-with-docs, Wayfinder and their required skills/templates, Grilling, Caveman, UI-UX-Pro-Max search code/data, and CodeGraph/RTK guides. See [architecture](docs/ARCHITEKTUR.md), [onboarding](docs/PRODUKT-ONBOARDING.md), and [component provenance](docs/THIRD-PARTY.md).
+The plugin bundles the orchestrator, setup, Ponytail, grill-with-docs, Wayfinder and their required skills/templates, Grilling, Caveman, UI-UX-Pro-Max search code/data, and CodeGraph/RTK guides. Existing roles also carry delivery/recovery, risk-based security/operations, source-bound evidence and preservation-aware retirement. See [architecture](docs/ARCHITEKTUR.md), [onboarding](docs/PRODUKT-ONBOARDING.md), [lifecycle evidence](docs/LIFECYCLE.md), and [component provenance](docs/THIRD-PARTY.md).
 
 Project-original material is [MIT licensed](LICENSE). Bundled third-party components retain their own licenses and notices. See [contributing](CONTRIBUTING.md), [security reporting](SECURITY.md), and [publication setup](docs/GITHUB-PUBLICATION.md).
 
@@ -25,14 +25,14 @@ Quick questions and standalone lookups generally do not need a goal or the full 
 
 ## Roadmap
 
-The routing and setup foundation is already implemented: four task routes, dedicated Luna-low factual research, separate stack roles, configurable local/GitHub/GitLab ticket storage, and an explicit storage-choice gate during setup. These are current capabilities, not roadmap promises.
+The routing and setup foundation is implemented: four task routes, dedicated Luna-low factual research, separate stack roles, configurable local/GitHub/GitLab ticket storage, and an explicit storage-choice gate during setup. The repository also defines Windows/Linux CI, opt-in host observations, source-only candidate/reversal checks and lifecycle/security/operations/retirement contracts. Instructions and local checks have narrower evidence than observed target-specific execution; see [host protocols](docs/HOST-TESTS.md) and [the acceptance matrix](docs/LIFECYCLE.md#criterion-evidence-mapping).
 
 Remaining work is validation and improvement, without delivery commitments:
 
-- **Real host/model workflows:** observe route selection, model dispatch, multi-turn interviews, native initialization and parallel ticket iteration in actual sessions. Contract checks cannot guarantee future compliance.
+- **Real host/model workflows:** extend bounded native desktop edit/pending-decision observations to research model dispatch, separate stack roles, multi-turn interviews, native initialization and parallel ticket iteration. Historical CLI delegated-edit failures remain recorded; the corrected CLI runner needs source-bound edit/pending-state receipts, and contract checks cannot guarantee future compliance.
 - **Hosted ticket workflows:** verify authenticated GitHub/GitLab map and ticket operations with explicitly authorized writes; read-only metadata and command doubles are not end-to-end proof.
 - **Measured overhead and role choices:** compare token use, elapsed time and verification outcomes across routes, and evaluate models for substantive roles. Pure context collection remains fixed to fresh GPT-6 Luna low agents.
-- **Onboarding, recovery and compatibility:** simplify prerequisite/MCP/reload recovery and extend fresh-machine, graphical onboarding and post-trust hook evidence across supported hosts. Existing CLI/container checks and platform reports are a starting point, not complete coverage.
+- **Onboarding, recovery and compatibility:** extend fresh-machine, graphical onboarding, post-trust hook and actual target recovery evidence. Defined CI jobs, local candidate reversal, operational/retirement walkthroughs and platform reports do not prove hosted CI execution, published rollback, production restore or decommissioning.
 
 ## Install through the repository marketplace
 
@@ -49,7 +49,7 @@ After installation, [onboarding](skills/onboarding/SKILL.md) asks whether to ini
 
 First initialization and every explicit `/setup` ask where maps/tickets belong: local Markdown, GitHub or GitLab, plus the directory/repository/project target. Setup shows an existing choice and waits for an actual keep/change answer before dependent writes. Defaults and preselected options are not answers. Explicit tracker setup follows the same gate; ordinary per-task readiness reuses validated settings without asking again.
 
-Prerequisites are a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for bundled tooling, and the runtime checks described by [setup](skills/setup/SKILL.md). Enable the plugin and review/trust its hooks through the normal host UI. Missing runtimes, stale process environments or unloaded MCP tools can require installation, repair or reload; the plugin never grants itself hook trust.
+Prerequisites are a supported Codex host, Node.js for lifecycle hooks, Python 3.10+ for setup tooling, and the runtime checks described by [setup](skills/setup/SKILL.md). Contributor, host and release verification use Python 3.13; the CI definition specifies Node 24. Enable the plugin and review/trust its hooks through the normal host UI. Missing runtimes, stale process environments or unloaded MCP tools can require installation, repair or reload; the plugin never grants itself hook trust.
 
 ## Optional: encapsulated execution environment
 
@@ -147,6 +147,8 @@ On stack routes, the independent [evaluation role](skills/evaluate/SKILL.md) che
 - Enabled SonarQube enforcement applies to configured projects and requires fresh current-source, analysis-specific green gates. Failed or unavailable required checks prevent completion; switches are not changed to evade failures.
 - Direct workers use focused verification without the stack lifecycle. Instructions prescribing a workflow are not proof that every host/model has executed it correctly.
 
+Existing goal/ticket evidence maps each criterion to an asserted command/result, current-source fingerprint, evidence path and optional release identity/status. Failed, disabled/skipped, inapplicable and unknown results stay distinct; stale source or missing assertions cannot establish a current pass. See [evaluation configuration and evidence](docs/EVALUATION.md) and [lifecycle guidance](docs/LIFECYCLE.md).
+
 Use `/setup` for explicit preparation/repair, including its storage-choice dialogue. From a repository checkout, the read-only helpers can be run directly:
 
 ```powershell
@@ -161,10 +163,18 @@ After first-time or explicit setup, projects without configured SonarQube receiv
 For contributors with `uv` installed, run the repository test suite:
 
 ```powershell
-uv run --with pytest python -m pytest tests -q
+uv run --python 3.13 --with pytest python -m pytest tests -q
 ```
 
 Use `--offline` when the dependencies are already cached. Coverage and scanner commands for this repository are documented in [SonarQube verification](docs/SONARQUBE.md); the test command alone is not a quality-gate receipt.
+
+## Delivery, operations and retirement
+
+For delivery-bearing work, existing roles record the source-bound candidate and target, owner/authorization, prerequisites, preflight, abort/success signals, preserved data and rollback or forward recovery. [Delivery](docs/DELIVERY.md) documents the read-only candidate checker, finite source-only staging inventory and isolated local A/B/A reversal rehearsal. Local implementation and rehearsal do not authorize publication or prove published rollback, automatic updates or production recovery. Unexecuted release and post-release stages remain unverified.
+
+Apply security proportionately to affected user data/secrets, trust boundaries, permissions, exposed interfaces, dependencies, migration/data-loss and availability risks, with concrete mitigations and negative checks. [Operations](docs/OPERATIONS.md) reuses existing tooling for handoff, redacted evidence, authorized incident response and honest backup/restore limits. [Private security reporting](SECURITY.md) is separate from permission to send a report or rotate credentials; no scanner certifies all secrets or vulnerabilities absent.
+
+[Retirement](docs/LIFECYCLE.md#retirement-and-preservation) distinguishes removing this plugin from decommissioning downstream systems. Plan owner/authorization, consumers/integrations, authorized notices, retention/access/legal obligations, backups/recovery window and independent verification. Preserve user projects, data/history and shared runtimes, caches, credentials, MCP entries and unrelated global policy blocks. A walkthrough grants no destructive-action or outbound-communication permission and proves no actual retirement.
 
 ## Compatibility and evidence limits
 
@@ -172,4 +182,6 @@ The native `.codex-plugin/plugin.json` and minimal root identity follow the comp
 
 Automatic execution still requires an enabled/loaded plugin, Node.js and user-trusted hooks. MCP registration is not session visibility. Normal setup does not self-approve hooks, overwrite conflicting MCP entries or grant external-write permissions. Authorized prerequisite repair can require network access; separately authorized SonarQube operations follow their protected credential rules.
 
-Recorded checks include actual local tracker/map/ticket workflows and CLI/container validation. The [remote guide](docs/REMOTE-CONTAINER.md) distinguishes Windows evidence from user-confirmed macOS/Colima operation and the still-unverified Windows graphical onboarding/hook approval. Real GitHub/GitLab authentication and ticket writes, complete fresh-machine/post-trust host setup, and model-driven multi-turn/parallel ticket workflows remain separate validation gaps. Treat the roadmap and these limits as evidence boundaries, not as missing implementations of the existing routing and tracker configuration.
+Recorded checks include local tracker/map/ticket workflows, CLI/container validation and bounded native desktop worker observations with supplied instructions. Historical Windows CLI `0.171.0-alpha.13` and Linux CLI `0.166.0` runs failed strict delegated-edit assertions. The corrected runner removes inherited desktop provider selectors, binds the exact staged skill and checks the complete release artifact; run the [explicit CLI protocol](docs/HOST-TESTS.md) for current-source edit/pending-state evidence. Native desktop observations cannot establish CLI passes, independent delegation or automatic installed hooks. Final current-source results and their exact boundaries belong in the [acceptance matrix](docs/LIFECYCLE.md#criterion-evidence-mapping); earlier source receipts remain historical.
+
+The [remote guide](docs/REMOTE-CONTAINER.md) distinguishes Windows evidence from user-confirmed macOS/Colima operation and unverified Windows graphical onboarding/hook approval. Hosted CI execution, authenticated GitHub/GitLab ticket writes, complete fresh-machine/post-trust setup, and full model-driven multi-turn/parallel workflows need their own evidence. Measured elapsed time and provided usage identify one observation; missing usage is unknown, tokens/time are not currency cost and savings need a comparable baseline. No lower-cost promise follows from the workflow.
