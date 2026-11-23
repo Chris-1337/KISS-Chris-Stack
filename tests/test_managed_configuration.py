@@ -1,5 +1,6 @@
 import os
 import re
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -15,11 +16,15 @@ def _run(command: list[str]) -> None:
     subprocess.run(command, check=True, cwd=ROOT)
 
 
-def _bash_path(path: Path) -> str:
+def _bash_path(path: Path, bash: str) -> str:
     path = path.resolve()
     if os.name != "nt":
         return str(path)
-    return f"/mnt/{path.drive[0].lower()}{path.as_posix()[2:]}"
+    quoted = shlex.quote(path.as_posix())
+    return subprocess.run(
+        [bash, "-c", f"if command -v cygpath >/dev/null 2>&1; then cygpath -u {quoted}; else wslpath -u {quoted}; fi"],
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
 
 
 def _assert_managed_update(path: Path, update) -> None:
@@ -80,7 +85,7 @@ def test_shell_managed_block_is_idempotent_and_preserves_foreign_content(tmp_pat
     script = ROOT / "scripts" / "upsert-managed-block.sh"
     _assert_managed_update(
         target,
-        lambda: _run([bash, _bash_path(script), _bash_path(target), _bash_path(POLICY)]),
+        lambda: _run([bash, _bash_path(script, bash), _bash_path(target, bash), _bash_path(POLICY, bash)]),
     )
 
 
