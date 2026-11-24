@@ -6,6 +6,10 @@ The plugin bundles the orchestrator, setup, Ponytail, grill-with-docs, Wayfinder
 
 Project-original material is [MIT licensed](LICENSE). Bundled third-party components retain their own licenses and notices. See [contributing](CONTRIBUTING.md), [security reporting](SECURITY.md), and [publication setup](docs/GITHUB-PUBLICATION.md).
 
+See the [changelog](CHANGELOG.md) for conceptual development history grouped by development date. Merging into `main` constitutes a release.
+
+See [SDLC & Workflow](SDLC%20%26%20Workflow.md) for lifecycle diagrams, responsibilities and verification gates.
+
 ## Plugin is good for / not so good for
 
 **Good for:**
