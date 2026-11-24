@@ -1,0 +1,57 @@
+{
+  "status": "failed",
+  "requested_model": "gpt-6.1-sol",
+  "model_identity": "explicit CLI selection; server identity unavailable in exec events",
+  "evidence_layer": "installed-skill-discovery plus authenticated-project-skill behavior",
+  "automatic_plugin_hooks": "unverified; no hook trust changes",
+  "delegation": "unverified; exec events do not prove agent model/effort separation",
+  "catalogue": {
+    "direct": "filesystem correction scenario",
+    "interview": "pending decision preserves state",
+    "stack": "unverified: native goal and independent roles require host orchestration evidence",
+    "wayfinder": "unverified: parallel ticket orchestration requires separate host evidence"
+  },
+  "cli_version": "codex-cli 0.171.0-alpha.13",
+  "python_version": "3.13.13",
+  "candidate_fingerprint": "da31e95aa3fc983447f635d9f5421199e05ef66e21c2ef049c325ca611395098",
+  "scenario_fingerprint": "167e4a21d7a2e5db46d87201e941f2855aa3a13ddb06452e0fe281f028b4b5c2",
+  "stage": "direct-edit:filesystem-assertions",
+  "installed_candidate_discovery": {
+    "status": "passed",
+    "method": "codex debug prompt-input",
+    "candidate_skill_discovered": true,
+    "fingerprint_matches": true
+  },
+  "scenarios": [
+    {
+      "id": "direct-edit",
+      "status": "running",
+      "candidate_discovery": {
+        "status": "passed",
+        "method": "codex debug prompt-input",
+        "candidate_skill_discovered": true
+      },
+      "invocation": {
+        "subcommand": "exec",
+        "ephemeral": true,
+        "sandbox": "workspace-write",
+        "ignore_user_config": true,
+        "windows_sandbox": "elevated"
+      },
+      "execution": {
+        "status": "passed",
+        "evidence_layer": "event-execution",
+        "event_count": 7,
+        "usage": {
+          "input_tokens": 82142,
+          "cached_input_tokens": 66816,
+          "output_tokens": 420
+        },
+        "missing_usage": [],
+        "elapsed_seconds": 20.681
+      }
+    }
+  ],
+  "failure": "Fixture content assertion failed",
+  "elapsed_seconds": 25.642
+}

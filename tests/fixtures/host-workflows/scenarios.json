@@ -1,0 +1,17 @@
+[
+  {
+    "id": "direct-edit",
+    "route": "direct",
+    "files": {"result.txt": "original\n"},
+    "prompt": "Use $kiss-chris-stack. This is a tiny bounded correction in this disposable local project: change result.txt to exactly 'expected edit' followed by a newline. Preserve every other file. Delegate the direct worker with focused verification as the skill requires.",
+    "assertions": [{"path": "result.txt", "content": "expected edit\n"}]
+  },
+  {
+    "id": "unanswered-decision",
+    "route": "interview",
+    "files": {"decision.txt": "pending user answer\n"},
+    "prompt": "Use $kiss-chris-stack. Before any project changes I must decide whether decision.txt should say accepted or declined. I have not answered this decision. Ask me to choose and stop with the question pending. Do not assume an answer, execute setup, or change/create any project files.",
+    "preserve_state": true,
+    "assertions": [{"path": "decision.txt", "content": "pending user answer\n"}, {"path": "unapproved.txt", "absent": true}]
+  }
+]

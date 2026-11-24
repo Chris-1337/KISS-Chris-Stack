@@ -24,6 +24,18 @@ Classify the request before setup, configuration backfill or goal registration:
 
 If missing facts prevent classification, collect them first. Do not use a tiny route for uncertain or risky work merely because its edit looks short.
 
+## Criterion evidence mapping
+
+Carry each criterion into existing goal/ticket evidence with its command/assertion/result, current source revision and dirty-source fingerprint, evidence path and optional release/candidate identity/status or inapplicable reason. Apply [lifecycle guidance](../../docs/LIFECYCLE.md): failed, disabled/skipped, inapplicable and unknown/unverified results stay distinct; stale source or missing assertions cannot support a current pass. Supply these boundaries to existing roles and review fresh affected proof before completion. Record observed compatibility and usage honestly; retirement preserves user/shared resources and requires actual authorization and independent verification.
+
+## Delivery applicability
+
+Apply the shared policy's [delivery and recovery contract](../../assets/global-stack-policy.md#delivery-and-recovery) proportionately when defining the goal. Record delivery applicability; delivery-bearing work identifies the candidate, target, explicit authorization, preflight, rollback or forward recovery with preservation, and post-release verification. Existing roles prepare and independently check these facts. Development completion never grants release authorization; report release execution and observed post-release results separately, leaving unexecuted stages unverified.
+
+## Risk-based security and operations
+
+Apply the shared [security and operations contract](../../assets/global-stack-policy.md#risk-based-security-and-operations) before defining the goal. Supply applicable assets/trust boundaries, abuse risks, mitigations and negative verification checks to the existing test, implementation and evaluation roles through delivery and maintenance. Record a brief inapplicable reason for benign local work without adding setup/interviews or changing direct routing. Enabled live/SonarQube gates remain required. For operational changes or incidents, use the affected project's runbook; this plugin's [operations reference](../../docs/OPERATIONS.md) covers handoff, authorized response and honest recovery limits.
+
 ## Delegate context and substantive work
 
 All pure context collection, including before grill-me/grilling and goals, always uses fresh-context `gpt-6-luna` agents with `reasoning_effort="low"`, `fork_turns="none"`. Assign separate bounded directions and source-linked notes/handoffs, allowed paths/tools and exclusions. Researchers collect facts only: no source/configuration changes, implementation, design decisions, recommendations or speculation. They may write only assigned factual notes. Missing model/effort/agents blocks required research; never silently substitute or fall back to root research. Use [research](../research/SKILL.md) and [handoff](../handoff/SKILL.md) for these assignments.

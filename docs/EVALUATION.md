@@ -93,6 +93,12 @@ Projects with no frontend do not install browser dependencies. Backend/API/CLI/p
 
 Use local test environments/data. Local evaluation grants no production writes, remote-engine mutation, security-setting changes or approval bypass. Cleanup stops only evaluation-owned processes, sessions and containers; reused services, volumes and data remain intact.
 
+## Criterion evidence mapping
+
+Follow the [lifecycle evidence contract](LIFECYCLE.md#criterion-evidence-mapping) in existing goal/ticket receipts: criterion, command/assertion/result, current revision and dirty-source fingerprint, evidence path, and optional release/candidate identity and status or inapplicable reason. Reject stale source and missing assertions as current-pass evidence. Passed, failed, disabled/skipped, inapplicable and unknown/unverified remain distinct. Reexecute affected proof after source changes and refresh enabled applicable gates. The final integrated matrix lives in `.sonar-evidence/sdlc-t4/acceptance-matrix.json`; its presence alone cannot establish a pass.
+
+Record actual compatibility, elapsed time and provided usage using [host protocols](HOST-TESTS.md); missing observations stay unknown and tokens/time imply no currency cost or savings. Evaluate delivery/recovery under [delivery](DELIVERY.md), security/operational handoff under [operations](OPERATIONS.md), and authorized retirement with user/shared-resource preservation under [lifecycle retirement](LIFECYCLE.md#retirement-and-preservation). Walkthroughs are document checks, never executed incident, release or decommission evidence. These responsibilities use existing roles and independent gates without new configuration switches.
+
 ## SonarQube
 
 When enabled and configured, preserve the existing renewal preflight, measured coverage requirements and fresh analysis-specific green gates for every relevant project/component. See [SonarQube operations](SONARQUBE.md). An explicit disabled switch skips automatic scanner/readback/token operations but preserves services, credentials and scanner configuration. The switch does not weaken server thresholds or remove existing quality configuration. The repository keeps both gates enabled.

@@ -43,6 +43,10 @@ Ticket types:
 - **Prototype (HITL):** a separate substantive agent uses [prototype](../prototype/SKILL.md) for a bounded disposable artifact; actual human feedback settles the design question. Preparatory facts still come from Luna low.
 - **Task (AFK or HITL):** bounded work or implementation. The root assigns a precise checklist to the human where needed. All implementation uses stack goal and separated roles; provisioning/migration/external writes require their actual authorization.
 
+## Criterion evidence mapping
+
+Keep each ticket's criterion linked to its command/assertion/result, current source revision and dirty-source fingerprint, evidence path and optional release/candidate identity/status or inapplicable reason. Use [lifecycle guidance](../../docs/LIFECYCLE.md) within existing ticket evidence: failed, disabled/skipped, inapplicable and unknown/unverified remain distinct. Stale source or missing assertions cannot close a ticket; root reviews fresh affected checks on integrated source and all enabled applicable gates. Preserve history and source-bound compatibility/usage observations; any retirement ticket retains actual authorization, user/shared resources, recovery limits and independent post-action verification.
+
 ## Schedule and resolve
 
 1. Root delegates destination/frontier planning and local map/ticket documentation. If the whole effort turns out clear and normal-sized, reclassify to stack with goal without inventing fog or requesting an unnecessary closing confirmation.

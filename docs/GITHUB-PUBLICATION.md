@@ -1,5 +1,7 @@
 # GitHub publication setup
 
+For future candidates, use [delivery and recovery readiness](DELIVERY.md) for source-bound local checks, explicit release authorization, preservation/reversal and post-release evidence. The historical publication observations below do not authorize another release or establish current delivery/rollback behavior.
+
 ## Access model
 
 The repository remains owned by the personal account [`Chris-1337`](https://github.com/Chris-1337/KISS-Chris-Stack). The owner confirmed that only this account needs admin access; no team, organization transfer, or additional collaborator is required. The collaborator and invitation APIs showed only the owner and no pending invitations on 2026-10-28.

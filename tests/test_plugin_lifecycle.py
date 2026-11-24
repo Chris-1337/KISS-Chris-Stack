@@ -256,6 +256,7 @@ def test_root_hook_defers_symlink_config_block_without_following_or_initializing
         marker.symlink_to(target)
     except OSError as error:
         pytest.skip(f"Host does not permit creating a symlink fixture: {error}")
+    original_link = os.readlink(marker)
     result = _hook(isolated_plugin, {"hook_event_name": "UserPromptSubmit", "cwd": str(project), "prompt": "Correct one typo."})
     assert result.returncode == 0, "A symlinked stack config must not suppress direct-task routing guidance: " + result.stderr
     context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"].lower()
@@ -265,7 +266,7 @@ def test_root_hook_defers_symlink_config_block_without_following_or_initializing
     assert "block" in stack_context or "stop" in stack_context
     assert "execute /setup initialization" not in stack_context
     assert "already configured" not in stack_context
-    assert marker.is_symlink() and marker.readlink() == target
+    assert marker.is_symlink() and os.readlink(marker) == original_link
     if dangling:
         assert not target.exists()
     else:
